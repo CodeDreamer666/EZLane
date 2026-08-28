@@ -8,7 +8,7 @@ interface FieldProps {
   className?: string;
 }
 
-export function Field({ label, children, className }: FieldProps) {
+export default function Field({ label, children, className }: FieldProps) {
   return (
     <div
       className={cn(

@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import Stat from "~/app/_components/projects/Stat";
 import type { DragEvent } from "react";
 
 import { Select, Tag, Toggle, type StatusKey } from "~/app/_components/ui";
@@ -11,7 +12,7 @@ import {
   received,
   statusKey,
 } from "~/lib/format";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 
 const STATUS_OPTIONS = [
   "Not started",
@@ -356,19 +357,6 @@ export default function ProjectDetailPage() {
           </button>
         </div>
       </aside>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-bg p-[13px_15px]">
-      <div className="text-text/42 text-[10px] tracking-[0.12em] uppercase">
-        {label}
-      </div>
-      <div className="font-heading mt-[4px] text-[21px] tabular-nums">
-        {value}
-      </div>
     </div>
   );
 }

@@ -1,11 +1,13 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import Divider from "~/app/_components/proposals/Divider";
+import SummaryRow from "~/app/_components/proposals/SummaryRow";
 import { useEffect, useRef } from "react";
 
 import { Select, Tag, type StatusKey } from "~/app/_components/ui";
 import { ago, fmtDate, money, statusKey } from "~/lib/format";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 
 export default function ProposalEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -425,19 +427,6 @@ export default function ProposalEditorPage() {
           </div>
         </aside>
       </div>
-    </div>
-  );
-}
-
-function Divider() {
-  return <span className="bg-divider m-[0_6px] h-[18px] w-[1px]" />;
-}
-
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-text/55">{label}</span>
-      <span className="tabular-nums">{value}</span>
     </div>
   );
 }

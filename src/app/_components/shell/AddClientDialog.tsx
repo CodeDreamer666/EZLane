@@ -3,9 +3,9 @@
 import { useState } from "react";
 
 import { Dialog, Field, Input, Textarea } from "~/app/_components/ui";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 
-export function AddClientDialog() {
+export default function AddClientDialog() {
   const { state, closeAddClient, addClient } = useEzlane();
   const [nc, setNc] = useState({ name: "", email: "", company: "", notes: "" });
   const [error, setError] = useState(false);

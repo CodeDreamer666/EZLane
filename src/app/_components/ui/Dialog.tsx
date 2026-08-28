@@ -8,7 +8,7 @@ interface DialogProps {
   actions?: ReactNode;
 }
 
-export function Dialog({
+export default function Dialog({
   open,
   onClose,
   title,

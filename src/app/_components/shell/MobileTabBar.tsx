@@ -10,7 +10,7 @@ import {
   IconProjects,
   IconProposals,
 } from "~/app/_components/ui";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 
 const TABS = [
   { href: "/dashboard", label: "Dashboard", Icon: IconDashboard },
@@ -19,7 +19,7 @@ const TABS = [
   { href: "/notifications", label: "Alerts", Icon: IconBell },
 ] as const;
 
-export function MobileTabBar() {
+export default function MobileTabBar() {
   const pathname = usePathname();
   const { toggleNav } = useEzlane();
 

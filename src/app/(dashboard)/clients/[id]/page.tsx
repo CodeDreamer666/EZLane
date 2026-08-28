@@ -3,8 +3,9 @@
 import { useParams } from "next/navigation";
 
 import { Button, Tag, type StatusKey } from "~/app/_components/ui";
+import InfoRow from "~/app/_components/clients/InfoRow";
 import { fmtDate, money, statusKey } from "~/lib/format";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -76,27 +77,6 @@ export default function ClientDetailPage() {
           New proposal
         </Button>
       </aside>
-    </div>
-  );
-}
-
-function InfoRow({
-  label,
-  value,
-  muted = false,
-}: {
-  label: string;
-  value: string;
-  muted?: boolean;
-}) {
-  return (
-    <div>
-      <div className="text-text/42 text-[10px] tracking-[0.12em] uppercase">
-        {label}
-      </div>
-      <div className={`mt-[3px] text-[13px] ${muted ? "text-text/70" : ""}`}>
-        {value}
-      </div>
     </div>
   );
 }

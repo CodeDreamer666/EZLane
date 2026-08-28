@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "~/app/_components/ui";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 import { api } from "~/trpc/react";
 
 export default function PlansPage() {

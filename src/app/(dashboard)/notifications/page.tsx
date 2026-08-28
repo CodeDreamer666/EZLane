@@ -2,7 +2,7 @@
 
 import { Tag } from "~/app/_components/ui";
 import { ago } from "~/lib/format";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 
 export default function NotificationsPage() {
   const { state, project, markRead, markAllRead, go } = useEzlane();

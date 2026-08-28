@@ -4,10 +4,10 @@ import Link from "next/link";
 
 import { Tag, type StatusKey } from "~/app/_components/ui";
 import { companyOrName, fmtDate, money, statusKey } from "~/lib/format";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 import type { Project } from "~/lib/types";
 
-export function ProjectCard({
+export default function ProjectCard({
   project,
   blocked = false,
 }: {

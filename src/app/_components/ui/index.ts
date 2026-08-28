@@ -1,17 +1,20 @@
-export { Button } from "./Button";
-export { Input, Textarea, Select } from "./Input";
-export { Field } from "./Field";
-export { Card, CardKicker, CardTitle, CardMeta } from "./Card";
-export { Tag, type StatusKey } from "./Tag";
-export { Toggle } from "./Toggle";
-export { Kbd } from "./Kbd";
-export { Dialog } from "./Dialog";
-export {
-  IconDashboard,
-  IconClients,
-  IconProposals,
-  IconProjects,
-  IconBell,
-  IconSearch,
-  IconMenu,
-} from "./Icons";
+export { default as Button } from "./Button";
+export { default as Input } from "./Input";
+export { default as Textarea } from "./Textarea";
+export { default as Select } from "./Select";
+export { default as Field } from "./Field";
+export { default as Card } from "./Card";
+export { default as CardKicker } from "./CardKicker";
+export { default as CardTitle } from "./CardTitle";
+export { default as CardMeta } from "./CardMeta";
+export { default as Tag, type StatusKey } from "./Tag";
+export { default as Toggle } from "./Toggle";
+export { default as Kbd } from "./Kbd";
+export { default as Dialog } from "./Dialog";
+export { default as IconDashboard } from "./IconDashboard";
+export { default as IconClients } from "./IconClients";
+export { default as IconProposals } from "./IconProposals";
+export { default as IconProjects } from "./IconProjects";
+export { default as IconBell } from "./IconBell";
+export { default as IconSearch } from "./IconSearch";
+export { default as IconMenu } from "./IconMenu";

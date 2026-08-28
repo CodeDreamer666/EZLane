@@ -1,8 +1,8 @@
 "use client";
 
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 
-export function Toast() {
+export default function Toast() {
   const { state } = useEzlane();
   if (!state.toast) return null;
   return (

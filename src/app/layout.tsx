@@ -3,8 +3,9 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 import { Cormorant_Garamond, Geist, Lora } from "next/font/google";
 
-import { EzlaneProvider } from "~/lib/store";
-import { TRPCReactProvider } from "~/trpc/react";
+import MessageCenter from "~/app/_components/shell/MessageCenter";
+import EzlaneProvider from "~/lib/store";
+import TRPCReactProvider from "~/trpc/react";
 
 export const metadata: Metadata = {
   title: "EZLane",
@@ -41,6 +42,7 @@ export default function RootLayout({
         <TRPCReactProvider>
           <EzlaneProvider>{children}</EzlaneProvider>
         </TRPCReactProvider>
+        <MessageCenter />
       </body>
     </html>
   );

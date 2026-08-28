@@ -9,7 +9,7 @@ interface TagProps extends HTMLAttributes<HTMLSpanElement> {
   status: StatusKey;
 }
 
-export function Tag({ status, className, ...props }: TagProps) {
+export default function Tag({ status, className, ...props }: TagProps) {
   return (
     <span
       className={cn(

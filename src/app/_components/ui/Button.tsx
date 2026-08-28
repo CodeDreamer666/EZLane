@@ -10,13 +10,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
-  primary: "border-accent text-accent hover:bg-accent/12 active:bg-accent/22",
-  secondary: "border-divider hover:bg-text/7 active:bg-text/14",
+  primary: "border-accent! text-accent! hover:bg-accent/12 active:bg-accent/22",
+  secondary: "border-divider! hover:bg-text/7 active:bg-text/14",
   ghost: "px-1 text-accent hover:bg-accent/10 active:bg-accent/18",
   icon: "h-9 w-9 p-0",
 };
 
-export function Button({
+export default function Button({
   variant = "secondary",
   block = false,
   className,

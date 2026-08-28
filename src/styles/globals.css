@@ -7,14 +7,17 @@
   --font-heading:
     var(--font-cormorant), "Cormorant Garamond", ui-serif, Georgia, serif;
   --font-body: var(--font-lora), "Lora", ui-serif, Georgia, serif;
-
   --color-bg: #0a0b0e;
   --color-surface: #13151a;
   --color-text: #f2f5f8;
   --color-accent: #5b93ff;
   --color-accent-2: #5b93ff;
   --color-divider: color-mix(in srgb, #f2f5f8 13%, transparent);
-
+  /* Feedback — tuned to sit beside the blue accent on the dark surface */
+  --color-success: #34d399;
+  --color-success-fg: #d7f5e7;
+  --color-danger: #f87171;
+  --color-danger-fg: #fbdcdc;
   --color-neutral-100: #171a20;
   --color-neutral-200: #1e222a;
   --color-neutral-300: #2a2f39;
@@ -24,7 +27,6 @@
   --color-neutral-700: #a7afbb;
   --color-neutral-800: #cfd5de;
   --color-neutral-900: #eef1f5;
-
   --color-accent-100: #101c33;
   --color-accent-200: #16294b;
   --color-accent-300: #1e3a68;
@@ -34,7 +36,6 @@
   --color-accent-700: #8fb5ff;
   --color-accent-800: #b9d0ff;
   --color-accent-900: #dfeaff;
-
   --color-accent-2-100: #101c33;
   --color-accent-2-200: #16294b;
   --color-accent-2-300: #1e3a68;
@@ -44,15 +45,12 @@
   --color-accent-2-700: #8fb5ff;
   --color-accent-2-800: #b9d0ff;
   --color-accent-2-900: #dfeaff;
-
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.55);
   --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.6);
-
   --radius-sm: 2px;
   --radius-md: 4px;
   --radius-lg: 7px;
-
   --spacing-1: 4.6px;
   --spacing-2: 9.2px;
   --spacing-3: 13.8px;

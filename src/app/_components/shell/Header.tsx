@@ -1,34 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import { Button, IconBell, IconMenu } from "~/app/_components/ui";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
+import usePageTitle from "./usePageTitle";
 
-const TITLES: Record<string, string> = {
-  dashboard: "Dashboard",
-  clients: "Clients",
-  proposals: "Proposals",
-  projects: "Projects",
-  notifications: "Notifications",
-  settings: "Settings",
-  plans: "Plans",
-};
-
-function usePageTitle(): string {
-  const pathname = usePathname();
-  const { client, project } = useEzlane();
-  const parts = pathname.split("/").filter(Boolean);
-  const r0 = parts[0] ?? "dashboard";
-  if (r0 === "clients" && parts[1]) return client(parts[1]).name;
-  if (r0 === "projects" && parts[1])
-    return project(parts[1])?.title ?? "Project";
-  if (r0 === "proposals" && parts[1]) return "Proposal editor";
-  return TITLES[r0] ?? "Dashboard";
-}
-
-export function Header() {
+export default function Header() {
   const { state, toggleNav, openAddClient } = useEzlane();
   const title = usePageTitle();
   const unreadCount = state.notifications.filter(

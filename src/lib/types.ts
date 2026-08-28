@@ -54,11 +54,7 @@ export interface ProposalComment {
 }
 
 export type ProposalStatus =
-  | "Draft"
-  | "Sent"
-  | "Client Commented"
-  | "Revised"
-  | "Accepted";
+  "Draft" | "Sent" | "Client Commented" | "Revised" | "Accepted";
 
 export interface Proposal {
   id: string;

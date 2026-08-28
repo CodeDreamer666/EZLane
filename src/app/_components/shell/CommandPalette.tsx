@@ -4,7 +4,7 @@ import type { MouseEvent } from "react";
 
 import { Input, Kbd } from "~/app/_components/ui";
 import { companyOrName } from "~/lib/format";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 
 interface Command {
   group: string;
@@ -33,7 +33,7 @@ const GO_COMMANDS = [
   { group: "Go", label: "Settings — Plan & billing", route: "/settings/plan" },
 ] as const;
 
-export function CommandPalette() {
+export default function CommandPalette() {
   const { state, closePalette, setPaletteQuery, go, client, openAddClient } =
     useEzlane();
 

@@ -11,7 +11,8 @@ import {
   IconProposals,
   IconSearch,
 } from "~/app/_components/ui";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
+import initials from "./initials";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", Icon: IconDashboard },
@@ -27,7 +28,7 @@ const SETTINGS_ITEMS = [
   { href: "/settings/plan", label: "Plan & billing", pro: false },
 ] as const;
 
-export function Sidebar() {
+export default function Sidebar() {
   const pathname = usePathname();
   const { state, activeProjects, limit, openPalette, closeNav } = useEzlane();
 
@@ -49,7 +50,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className="border-divider sticky top-0 flex h-screen w-[238px] flex-none flex-col gap-[16px] overflow-y-auto overscroll-contain border-r bg-[#080910] p-[18px_14px_20px] max-lg:fixed max-lg:top-0 max-lg:-left-[282px] max-lg:z-45 max-lg:w-[274px]! max-lg:overflow-y-auto max-lg:px-3.5! max-lg:pt-4! max-lg:pb-[26px]! max-lg:data-[open=1]:left-0 max-lg:data-[open=1]:shadow-lg"
+      className="border-divider sticky top-0 flex h-screen w-[238px] flex-none flex-col gap-[16px] overflow-y-auto overscroll-contain border-r bg-[#080910] p-[18px_14px_20px] lg:self-start [scrollbar-width:thin] [scrollbar-color:rgba(242,245,248,0.16)_#0a0b0e] max-lg:fixed max-lg:top-0 max-lg:-left-[282px] max-lg:z-45 max-lg:w-[274px]! max-lg:overflow-y-auto max-lg:px-3.5! max-lg:pt-4! max-lg:pb-[26px]! max-lg:data-[open=1]:left-0 max-lg:data-[open=1]:shadow-lg [&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar]:h-[8px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-bg [&::-webkit-scrollbar-thumb]:bg-text/16 [&::-webkit-scrollbar-thumb:hover]:bg-text/28 [&::-webkit-scrollbar-track]:bg-bg [&::-webkit-scrollbar-corner]:bg-bg"
       data-open={state.navOpen ? "1" : "0"}
     >
       <div className="flex items-center gap-[9px] p-[0_4px]">
@@ -142,7 +143,7 @@ export function Sidebar() {
         </div>
         {state.plan === "free" ? (
           <Link href="/plans" onClick={closeNav}>
-            <Button variant="primary" className="w-full p-[5px] text-[12.5px]">
+            <Button variant="primary" className="w-full p-[5px]! text-[12.5px]">
               Upgrade to Pro
             </Button>
           </Link>
@@ -164,14 +165,4 @@ export function Sidebar() {
       </div>
     </aside>
   );
-}
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 }

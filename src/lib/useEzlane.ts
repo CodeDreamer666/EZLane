@@ -1,0 +1,10 @@
+"use client";
+
+import { useContext } from "react";
+import { EzlaneContext, type EzlaneApi } from "~/lib/store";
+
+export default function useEzlane(): EzlaneApi {
+    const context = useContext(EzlaneContext);
+    if (!context) throw new Error("useEzlane must be used within EzlaneProvider");
+    return context;
+}

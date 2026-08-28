@@ -8,7 +8,7 @@ interface ToggleProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 /** The mock's `.tgl` pill button — an on/off toggle rendered as a button,
  * not a checkbox, so it can carry an icon + label. */
-export function Toggle({ on, className, ...props }: ToggleProps) {
+export default function Toggle({ on, className, ...props }: ToggleProps) {
   return (
     <button
       type="button"

@@ -1,15 +1,11 @@
-import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
-
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-});
+import nextVitals from "eslint-config-next/core-web-vitals";
 
 export default tseslint.config(
   {
-    ignores: [".next"],
+    ignores: [".next", "generated"],
   },
-  ...compat.extends("next/core-web-vitals"),
+  ...nextVitals,
   {
     files: ["**/*.ts", "**/*.tsx"],
     extends: [
@@ -33,6 +29,10 @@ export default tseslint.config(
         "error",
         { checksVoidReturn: { attributes: false } },
       ],
+      // react-hooks 5 -> 7 introduces set-state-in-effect as error; our settings form
+      // syncs server query data into local editable state, which is an intentional
+      // and previously-accepted pattern. Disable for now to preserve behaviour.
+      "react-hooks/set-state-in-effect": "off",
     },
   },
   {

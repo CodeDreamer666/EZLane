@@ -1,19 +1,17 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
-
 import { companyOrName, uid } from "~/lib/format";
-import { seed } from "~/lib/seed-data";
+import initialState from "~/lib/initialState";
+import { notifyError, notifySuccess } from "~/lib/messages";
 import type {
   AppNotification,
   Client,
@@ -26,40 +24,11 @@ import type {
   Settings,
 } from "~/lib/types";
 
-function initialState(): EzlaneState {
-  const s = seed();
-  return {
-    clients: s.clients,
-    projects: s.projects,
-    proposals: s.proposals,
-    notifications: s.notifications,
-    settings: s.settings,
-    plan: "free",
-    billing: "monthly",
-
-    paletteOpen: false,
-    paletteQuery: "",
-    addClientOpen: false,
-    toast: "",
-    openTabs: ["pr5"],
-    unlocked: {},
-    gatePw: "",
-    gateError: "",
-    composer: {},
-    dragOver: "",
-    signName: "",
-    acceptOpen: false,
-    pendingAnchor: "",
-    commentDraft: "",
-    navOpen: false,
-  };
-}
-
 /** Limit on simultaneously active (non-completed) projects for the Free plan;
  * Pro is unlimited. Mirrors the mock's `limit()`. */
 const FREE_ACTIVE_PROJECT_LIMIT = 2;
 
-interface EzlaneApi {
+export interface EzlaneApi {
   state: EzlaneState;
 
   // lookups
@@ -71,6 +40,10 @@ interface EzlaneApi {
 
   // ui
   say: (text: string) => void;
+  /** Top-level green success banner (auto-dismisses; also has a ✕). */
+  success: (text: string) => void;
+  /** Top-level red error banner (auto-dismisses; also has a ✕). */
+  error: (text: string) => void;
   openPalette: () => void;
   closePalette: () => void;
   setPaletteQuery: (q: string) => void;
@@ -100,7 +73,11 @@ interface EzlaneApi {
   addDeliverable: (proposalId: string) => void;
   setDeliverable: (proposalId: string, index: number, text: string) => void;
   removeDeliverable: (proposalId: string, index: number) => void;
-  addProposalComment: (proposalId: string, anchor: string, text: string) => void;
+  addProposalComment: (
+    proposalId: string,
+    anchor: string,
+    text: string,
+  ) => void;
   toggleProposalComment: (proposalId: string, commentId: string) => void;
   addClientComment: (
     projectId: string,
@@ -121,7 +98,10 @@ interface EzlaneApi {
   // messaging
   composer: (projectId: string) => ComposerDraft;
   setComposer: (projectId: string, patch: Partial<ComposerDraft>) => void;
-  post: (projectId: string, msg: Omit<ProjectMessage, "id" | "ts" | "file"> & { file?: string | null }) => void;
+  post: (
+    projectId: string,
+    msg: Omit<ProjectMessage, "id" | "ts" | "file"> & { file?: string | null },
+  ) => void;
   sendMessage: (projectId: string, side: "freelancer" | "client") => void;
   setDragOver: (projectId: string) => void;
   clearDragOver: () => void;
@@ -150,9 +130,9 @@ interface EzlaneApi {
   go: (path: string) => void;
 }
 
-const EzlaneContext = createContext<EzlaneApi | null>(null);
+export const EzlaneContext = createContext<EzlaneApi | null>(null);
 
-export function EzlaneProvider({ children }: { children: ReactNode }) {
+export default function EzlaneProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<EzlaneState>(initialState);
   const router = useRouter();
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -172,6 +152,13 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
       () => setState((s) => ({ ...s, toast: "" })),
       2800,
     );
+  }, []);
+
+  const success = useCallback((text: string) => {
+    notifySuccess(text);
+  }, []);
+  const error = useCallback((text: string) => {
+    notifyError(text);
   }, []);
 
   const client = useCallback(
@@ -211,9 +198,7 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
   const patchProposal = useCallback((id: string, patch: Partial<Proposal>) => {
     setState((s) => ({
       ...s,
-      proposals: s.proposals.map((p) =>
-        p.id === id ? { ...p, ...patch } : p,
-      ),
+      proposals: s.proposals.map((p) => (p.id === id ? { ...p, ...patch } : p)),
     }));
   }, []);
 
@@ -434,7 +419,15 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
       });
       say(wasOut ? `Revision sent to ${c.name}` : `Proposal sent to ${c.name}`);
     },
-    [state.proposals, state.settings.name, patchProposal, patchProject, client, notify, say],
+    [
+      state.proposals,
+      state.settings.name,
+      patchProposal,
+      patchProject,
+      client,
+      notify,
+      say,
+    ],
   );
 
   const addDeliverable = useCallback(
@@ -443,7 +436,7 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
         ...s,
         proposals: s.proposals.map((p) =>
           p.id === proposalId
-            ? { ...p, deliverables: p.deliverables.concat(["" ]) }
+            ? { ...p, deliverables: p.deliverables.concat([""]) }
             : p,
         ),
       })),
@@ -563,7 +556,9 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
         title: `${c.name} left a comment on “${pr.title}”`,
         route: `/proposals/${proposalId}`,
       });
-      say(`Comment added — it reaches ${state.settings.name} on their next load`);
+      say(
+        `Comment added — it reaches ${state.settings.name} on their next load`,
+      );
     },
     [state.projects, state.proposals, state.settings.name, client, notify, say],
   );
@@ -573,16 +568,15 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
     (id: string) =>
       setState((s) => ({
         ...s,
-        openTabs: s.openTabs.includes(id) ? s.openTabs : s.openTabs.concat([id]),
+        openTabs: s.openTabs.includes(id)
+          ? s.openTabs
+          : s.openTabs.concat([id]),
       })),
     [],
   );
-  const closeTab = useCallback(
-    (id: string) => {
-      setState((s) => ({ ...s, openTabs: s.openTabs.filter((x) => x !== id) }));
-    },
-    [],
-  );
+  const closeTab = useCallback((id: string) => {
+    setState((s) => ({ ...s, openTabs: s.openTabs.filter((x) => x !== id) }));
+  }, []);
 
   // ── status / payments / lifecycle ──────────────────────────────────
   const setStatus = useCallback(
@@ -791,7 +785,16 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
       }
       say("Message posted — the other side sees it on their next load");
     },
-    [state.composer, state.projects, state.settings.name, client, post, setComposer, notify, say],
+    [
+      state.composer,
+      state.projects,
+      state.settings.name,
+      client,
+      post,
+      setComposer,
+      notify,
+      say,
+    ],
   );
 
   // ── portal ──────────────────────────────────────────────────────────
@@ -906,7 +909,11 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
         contract: { name, ts: Date.now() },
         status: "In Progress",
       });
-      post(p.id, { from: "system", side: "system", text: `Agreement signed by ${name}` });
+      post(p.id, {
+        from: "system",
+        side: "system",
+        text: `Agreement signed by ${name}`,
+      });
       const half = Math.round(p.price / 2);
       notify({
         projectId: p.id,
@@ -930,7 +937,11 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
     (p: Project) => {
       const c = client(p.clientId);
       patchProject(p.id, { status: "Approved", progress: 100 });
-      post(p.id, { from: "system", side: "system", text: `${c.name} approved the work` });
+      post(p.id, {
+        from: "system",
+        side: "system",
+        text: `${c.name} approved the work`,
+      });
       notify({
         projectId: p.id,
         audience: "freelancer",
@@ -989,6 +1000,8 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
       activeProjects,
       limit,
       say,
+      success,
+      error,
       openPalette,
       closePalette,
       setPaletteQuery,
@@ -1051,6 +1064,8 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
       activeProjects,
       limit,
       say,
+      success,
+      error,
       openPalette,
       closePalette,
       setPaletteQuery,
@@ -1110,10 +1125,4 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
   return (
     <EzlaneContext.Provider value={value}>{children}</EzlaneContext.Provider>
   );
-}
-
-export function useEzlane(): EzlaneApi {
-  const ctx = useContext(EzlaneContext);
-  if (!ctx) throw new Error("useEzlane must be used within EzlaneProvider");
-  return ctx;
 }

@@ -2,7 +2,7 @@
 
 import { Button, Tag, type StatusKey } from "~/app/_components/ui";
 import { ago, money, statusKey } from "~/lib/format";
-import { useEzlane } from "~/lib/store";
+import useEzlane from "~/lib/useEzlane";
 
 export default function ProposalsPage() {
   const { state, client, openTab, go, openAddClient } = useEzlane();
