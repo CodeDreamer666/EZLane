@@ -6,7 +6,10 @@ function Svg({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
     <svg
       viewBox="0 0 24 24"
-      className={cn("ic", className)}
+      className={cn(
+        "block h-[15px] w-[15px] fill-none stroke-current",
+        className,
+      )}
       {...props}
     />
   );

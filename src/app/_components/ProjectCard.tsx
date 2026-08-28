@@ -25,42 +25,37 @@ export function ProjectCard({
         : "Unpaid";
 
   return (
-    <Link href={`/projects/${project.id}`} className="card row" style={{ gap: 10 }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="card-kicker">{companyOrName(c)}</div>
-          <div className="card-title" style={{ marginTop: 3 }}>
+    <Link
+      href={`/projects/${project.id}`}
+      className="border-divider hover:bg-text/5 flex cursor-pointer flex-col gap-2 gap-[10px] rounded-md border bg-transparent p-3"
+    >
+      <div className="flex items-start gap-[12px]">
+        <div className="min-w-0 flex-1">
+          <div className="text-accent text-[10px] tracking-[0.1em] uppercase">
+            {companyOrName(c)}
+          </div>
+          <div className="font-heading text-text mt-[3px] text-[17px] leading-[1.2] font-semibold">
             {project.title}
           </div>
         </div>
         <Tag status={statusKey(status) as StatusKey}>{status}</Tag>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div
-          style={{
-            flex: 1,
-            height: 3,
-            background: "color-mix(in srgb, var(--color-text) 12%, transparent)",
-            borderRadius: 2,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{ height: "100%", background: "var(--color-accent)", width: `${project.progress}%` }}
-          />
+      <div className="flex items-center gap-[10px]">
+        <div className="bg-text/12 h-[3px] flex-1 overflow-hidden rounded-sm">
+          <svg className="text-accent block h-full w-full" aria-hidden="true">
+            <rect
+              width={`${project.progress}%`}
+              height="100%"
+              fill="currentColor"
+            />
+          </svg>
         </div>
-        <span
-          style={{
-            fontSize: 11,
-            color: "color-mix(in srgb, var(--color-text) 55%, transparent)",
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
+        <span className="text-text/55 text-[11px] tabular-nums">
           {project.progress}%
         </span>
       </div>
-      <div className="card-meta" style={{ gap: 14 }}>
-        <span style={{ fontVariantNumeric: "tabular-nums" }}>{money(project.price)}</span>
+      <div className="text-text/50 flex items-center gap-1.5 gap-[14px] text-[11px]">
+        <span className="tabular-nums">{money(project.price)}</span>
         <span>Due {fmtDate(project.due)}</span>
         <span>{payLabel}</span>
         {blocked ? <Tag status="warn">needs a slot</Tag> : null}

@@ -10,10 +10,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
-  primary: "btn-primary",
-  secondary: "btn-secondary",
-  ghost: "btn-ghost",
-  icon: "btn-icon",
+  primary: "border-accent text-accent hover:bg-accent/12 active:bg-accent/22",
+  secondary: "border-divider hover:bg-text/7 active:bg-text/14",
+  ghost: "px-1 text-accent hover:bg-accent/10 active:bg-accent/18",
+  icon: "h-9 w-9 p-0",
 };
 
 export function Button({
@@ -24,7 +24,12 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={cn("btn", VARIANT_CLASS[variant], block && "btn-block", className)}
+      className={cn(
+        "font-heading text-text inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:opacity-45 max-lg:min-h-11",
+        VARIANT_CLASS[variant],
+        block && "mt-2 w-full",
+        className,
+      )}
       {...props}
     />
   );

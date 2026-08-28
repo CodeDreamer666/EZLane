@@ -19,9 +19,11 @@ export function LatestPost() {
   return (
     <div className="w-full max-w-xs">
       {latestPost ? (
-        <p className="truncate">Your most recent post: {latestPost.name}</p>
+        <p className="mb-3 truncate">
+          Your most recent post: {latestPost.name}
+        </p>
       ) : (
-        <p>You have no posts yet.</p>
+        <p className="mb-3">You have no posts yet.</p>
       )}
       <form
         onSubmit={(e) => {

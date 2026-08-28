@@ -10,7 +10,12 @@ interface FieldProps {
 
 export function Field({ label, children, className }: FieldProps) {
   return (
-    <div className={cn("field", className)}>
+    <div
+      className={cn(
+        "[&>label]:text-text/70 [&>label]:mb-[5px] [&>label]:block [&>label]:text-xs [&>label]:leading-[1.55]",
+        className,
+      )}
+    >
       <label>{label}</label>
       {children}
     </div>

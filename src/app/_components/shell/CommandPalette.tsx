@@ -20,8 +20,16 @@ const GO_COMMANDS = [
   { group: "Go", label: "Notifications", route: "/notifications" },
   { group: "Go", label: "Plans — Free vs Pro", route: "/plans" },
   { group: "Go", label: "Settings — Profile", route: "/settings/profile" },
-  { group: "Go", label: "Settings — Invoice details", route: "/settings/invoice" },
-  { group: "Go", label: "Settings — Portal branding", route: "/settings/branding" },
+  {
+    group: "Go",
+    label: "Settings — Invoice details",
+    route: "/settings/invoice",
+  },
+  {
+    group: "Go",
+    label: "Settings — Portal branding",
+    route: "/settings/branding",
+  },
   { group: "Go", label: "Settings — Plan & billing", route: "/settings/plan" },
 ] as const;
 
@@ -61,69 +69,46 @@ export function CommandPalette() {
   }
 
   const results = commands
-    .filter((c) => c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q))
+    .filter(
+      (c) =>
+        c.label.toLowerCase().includes(q) || c.group.toLowerCase().includes(q),
+    )
     .slice(0, 40);
 
   const stop = (e: MouseEvent) => e.stopPropagation();
 
   return (
     <div
-      className="dialog-backdrop"
-      style={{ alignItems: "flex-start", paddingTop: "14vh", zIndex: 60 }}
+      className="fixed inset-0 z-[60] grid place-items-center items-start bg-neutral-900/50 p-4 pt-[14vh]"
       onClick={closePalette}
     >
       <div
-        className="dialog"
-        style={{
-          width: "min(520px, 100%)",
-          padding: 0,
-          gap: 0,
-          background: "var(--color-surface)",
-          animation: "fadeUp .14s ease-out",
-        }}
+        className="border-divider bg-surface flex w-[min(520px,_100%)] animate-[fadeUp_.14s_ease-out] flex-col gap-0 rounded-lg border p-0 shadow-lg max-sm:max-h-[88vh] max-sm:w-[calc(100vw-26px)] max-sm:overflow-y-auto"
         onClick={stop}
       >
         <Input
           placeholder="Jump to a screen or run a command…"
-          style={{
-            border: 0,
-            borderBottom: "1px solid var(--color-divider)",
-            borderRadius: 0,
-            minHeight: 48,
-            fontSize: 15,
-          }}
+          className="border-divider min-h-[48px] rounded-none border-0 border-b text-[15px]"
           value={state.paletteQuery}
           onChange={(e) => setPaletteQuery(e.target.value)}
           autoFocus
         />
-        <div style={{ maxHeight: 320, overflow: "auto", padding: 6 }}>
+        <div className="max-h-[320px] overflow-auto p-[6px]">
           {results.map((c, i) => (
-            <div key={i} className="pcmd" onClick={c.run}>
-              <span
-                style={{
-                  fontSize: 10,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "color-mix(in srgb, var(--color-text) 35%, transparent)",
-                  width: 64,
-                  flex: "none",
-                }}
-              >
+            <div
+              key={i}
+              className="text-text/78 hover:bg-accent/14 hover:text-text flex cursor-pointer items-center gap-2.5 rounded px-3 py-[9px] text-[13.5px]"
+              onClick={c.run}
+            >
+              <span className="text-text/35 w-[64px] flex-none text-[10px] tracking-[0.1em] uppercase">
                 {c.group}
               </span>
-              <span style={{ flex: 1 }}>{c.label}</span>
+              <span className="flex-1">{c.label}</span>
               <Kbd>↩</Kbd>
             </div>
           ))}
           {results.length === 0 ? (
-            <div
-              style={{
-                padding: 22,
-                textAlign: "center",
-                fontSize: 13,
-                color: "color-mix(in srgb, var(--color-text) 45%, transparent)",
-              }}
-            >
+            <div className="text-text/45 p-[22px] text-center text-[13px]">
               Nothing matches that.
             </div>
           ) : null}

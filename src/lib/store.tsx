@@ -337,7 +337,7 @@ export function EzlaneProvider({ children }: { children: ReactNode }) {
         price: 0,
         due: "",
         deliverables: [],
-        body: `<h2>Overview</h2><p>What the project is and why it matters to ${companyOrName(c)}.</p><h2>Approach</h2><p>How you will work, in the order you will work.</p><h2>Terms</h2><p>50% deposit to start, 50% on completion.</p>`,
+        body: `<h2>Overview</h2><p className="mb-3">What the project is and why it matters to ${companyOrName(c)}.</p><h2>Approach</h2><p className="mb-3">How you will work, in the order you will work.</p><h2>Terms</h2><p className="mb-3">50% deposit to start, 50% on completion.</p>`,
         status: "Draft",
         lastSaved: null,
         sentAt: null,

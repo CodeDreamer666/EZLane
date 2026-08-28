@@ -7,12 +7,6 @@ import { Select, Tag, type StatusKey } from "~/app/_components/ui";
 import { ago, fmtDate, money, statusKey } from "~/lib/format";
 import { useEzlane } from "~/lib/store";
 
-const FONT_STACKS: Record<string, string> = {
-  Lora: "var(--font-body)",
-  "Cormorant Garamond": "var(--font-heading)",
-  "System sans": "system-ui, sans-serif",
-};
-
 export default function ProposalEditorPage() {
   const { id } = useParams<{ id: string }>();
   const {
@@ -60,7 +54,9 @@ export default function ProposalEditorPage() {
 
   const currentHtml = () => bodyRef.current?.innerHTML ?? pr.body;
 
-  const tabIds = state.openTabs.includes(id) ? state.openTabs : state.openTabs.concat([id]);
+  const tabIds = state.openTabs.includes(id)
+    ? state.openTabs
+    : state.openTabs.concat([id]);
   const tabs = tabIds
     .map((tid) => state.proposals.find((p) => p.id === tid))
     .filter((p): p is NonNullable<typeof p> => !!p);
@@ -89,7 +85,7 @@ export default function ProposalEditorPage() {
   return (
     <div>
       <Select
-        className="tabsel"
+        className="hidden max-sm:mb-[18px] max-sm:block max-sm:w-full"
         value={id}
         onChange={(e) => {
           if (e.target.value) go(`/proposals/${e.target.value}`);
@@ -102,30 +98,19 @@ export default function ProposalEditorPage() {
         ))}
       </Select>
 
-      <div
-        className="tabstrip"
-        style={{
-          display: "flex",
-          alignItems: "flex-end",
-          gap: 3,
-          borderBottom: "1px solid var(--color-divider)",
-          marginBottom: 22,
-          overflow: "auto",
-        }}
-      >
+      <div className="border-divider mb-[22px] flex items-end gap-[3px] overflow-auto border-b max-sm:hidden!">
         {tabs.map((t) => (
           <div
             key={t.id}
-            className="tab"
+            className="font-body text-text/58 hover:text-text data-[cur=1]:border-divider data-[cur=1]:bg-surface data-[cur=1]:text-text flex max-w-[230px] cursor-pointer items-center gap-2 rounded-t-[5px] border border-b-0 border-transparent bg-transparent px-[13px] py-2 text-[12.5px] leading-[normal] whitespace-nowrap"
             data-cur={t.id === id ? "1" : "0"}
             onClick={() => go(`/proposals/${t.id}`)}
           >
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
               {client(t.clientId).name.split(" ")[0]} — {t.title}
             </span>
             <span
-              className="lnk"
-              style={{ opacity: 0.5, fontSize: 14, lineHeight: 1 }}
+              className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 text-[14px] leading-[1] no-underline opacity-50 hover:underline"
               onClick={(e) => {
                 e.stopPropagation();
                 closeThisTab(t.id);
@@ -135,96 +120,87 @@ export default function ProposalEditorPage() {
             </span>
           </div>
         ))}
-        <button className="tb" style={{ marginBottom: 6, marginLeft: 4 }} onClick={() => go("/proposals")}>
+        <button
+          className="font-body text-text/72 hover:bg-text/8 hover:text-text mb-[6px] ml-[4px] min-w-7 cursor-pointer rounded-[3px] border border-transparent bg-transparent px-[8px] py-[3px] text-[13px] leading-[normal] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-35 max-lg:min-h-[38px] max-lg:min-w-[38px]"
+          onClick={() => go("/proposals")}
+        >
           +
         </button>
       </div>
 
-      <div
-        className="twocol"
-        style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 282px", gap: 30, alignItems: "start" }}
-      >
+      <div className="grid grid-cols-[minmax(0,_1fr)_282px] items-start gap-[30px] max-lg:grid-cols-[minmax(0,1fr)]! max-lg:gap-[26px]! max-lg:[&>aside]:static!">
         <div>
-          <div
-            style={{
-              border: "1px solid var(--color-divider)",
-              borderRadius: 5,
-              padding: "18px 20px",
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-              background: "color-mix(in srgb, var(--color-surface) 55%, transparent)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-              <h6 style={{ margin: 0, color: "color-mix(in srgb, var(--color-text) 50%, transparent)" }}>
+          <div className="bg-surface/55 border-divider flex flex-col gap-[16px] rounded-[5px] border p-[18px_20px]">
+            <div className="flex items-baseline justify-between">
+              <h6 className="font-heading text-text/50 m-0 text-[13px] leading-[1.12] font-semibold tracking-[0.08em] uppercase">
                 Terms — the source of truth
               </h6>
-              <span style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 42%, transparent)" }}>
+              <span className="text-text/42 text-[11px]">
                 Copied into the contract on accept
               </span>
             </div>
-            <div className="field">
+            <div className="[&>label]:text-text/70 [&>label]:mb-[5px] [&>label]:block [&>label]:text-xs [&>label]:leading-[1.55]">
               <label>Project title</label>
               <input
-                className="input"
+                className="border-divider font-inherit text-text caret-accent hover:border-text/45 focus-visible:border-accent min-h-9 w-full rounded-md border bg-transparent px-2.5 py-1.5 text-sm focus-visible:outline-offset-0 max-lg:min-h-11 max-lg:text-[15px]"
                 value={pr.title}
-                onChange={(e) => patchProposal(pr.id, { title: e.target.value })}
+                onChange={(e) =>
+                  patchProposal(pr.id, { title: e.target.value })
+                }
                 disabled={locked}
               />
             </div>
-            <div className="f2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              <div className="field">
+            <div className="grid grid-cols-[1fr_1fr] gap-[14px] max-sm:grid-cols-1!">
+              <div className="[&>label]:text-text/70 [&>label]:mb-[5px] [&>label]:block [&>label]:text-xs [&>label]:leading-[1.55]">
                 <label>Price (USD)</label>
                 <input
-                  className="input"
+                  className="border-divider font-inherit text-text caret-accent hover:border-text/45 focus-visible:border-accent min-h-9 w-full rounded-md border bg-transparent px-2.5 py-1.5 text-sm tabular-nums focus-visible:outline-offset-0 max-lg:min-h-11 max-lg:text-[15px]"
                   type="number"
                   value={pr.price}
-                  onChange={(e) => patchProposal(pr.id, { price: Number(e.target.value || 0) })}
+                  onChange={(e) =>
+                    patchProposal(pr.id, { price: Number(e.target.value || 0) })
+                  }
                   disabled={locked}
-                  style={{ fontVariantNumeric: "tabular-nums" }}
                 />
               </div>
-              <div className="field">
+              <div className="[&>label]:text-text/70 [&>label]:mb-[5px] [&>label]:block [&>label]:text-xs [&>label]:leading-[1.55]">
                 <label>Estimated due date</label>
                 <input
-                  className="input"
+                  className="border-divider font-inherit text-text caret-accent hover:border-text/45 focus-visible:border-accent min-h-9 w-full rounded-md border bg-transparent px-2.5 py-1.5 text-sm focus-visible:outline-offset-0 max-lg:min-h-11 max-lg:text-[15px]"
                   type="date"
                   value={pr.due}
-                  onChange={(e) => patchProposal(pr.id, { due: e.target.value })}
+                  onChange={(e) =>
+                    patchProposal(pr.id, { due: e.target.value })
+                  }
                   disabled={locked}
                 />
               </div>
             </div>
-            <div className="field">
+            <div className="[&>label]:text-text/70 [&>label]:mb-[5px] [&>label]:block [&>label]:text-xs [&>label]:leading-[1.55]">
               <label>Deliverables</label>
-              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+              <div className="flex flex-col gap-[7px]">
                 {pr.deliverables.map((d, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        width: 14,
-                        color: "color-mix(in srgb, var(--color-text) 38%, transparent)",
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
+                  <div key={i} className="flex items-center gap-[8px]">
+                    <span className="text-text/38 w-[14px] text-[11px] tabular-nums">
                       {i + 1}
                     </span>
                     <input
-                      className="input"
+                      className="border-divider font-inherit text-text caret-accent hover:border-text/45 focus-visible:border-accent min-h-9 w-full rounded-md border bg-transparent px-2.5 py-1.5 text-sm focus-visible:outline-offset-0 max-lg:min-h-11 max-lg:text-[15px]"
                       value={d}
                       onChange={(e) => setDeliverable(pr.id, i, e.target.value)}
                       disabled={locked}
                     />
-                    <button className="tb" onClick={() => removeDeliverable(pr.id, i)} disabled={locked}>
+                    <button
+                      className="font-body text-text/72 hover:bg-text/8 hover:text-text min-w-7 cursor-pointer rounded-[3px] border border-transparent bg-transparent px-[8px] py-[3px] text-[13px] leading-[normal] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-35 max-lg:min-h-[38px] max-lg:min-w-[38px]"
+                      onClick={() => removeDeliverable(pr.id, i)}
+                      disabled={locked}
+                    >
                       ×
                     </button>
                   </div>
                 ))}
                 <button
-                  className="btn btn-secondary"
-                  style={{ alignSelf: "flex-start", fontSize: 12.5, padding: "5px 11px" }}
+                  className="font-heading text-text border-divider hover:bg-text/7 active:bg-text/14 inline-flex cursor-pointer items-center justify-center gap-1.5 self-start rounded-md border bg-transparent px-[11px] py-[5px] text-[12.5px] leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
                   onClick={() => addDeliverable(pr.id)}
                   disabled={locked}
                 >
@@ -234,59 +210,82 @@ export default function ProposalEditorPage() {
             </div>
           </div>
 
-          <div style={{ marginTop: 20, border: "1px solid var(--color-divider)", borderRadius: 5, overflow: "hidden" }}>
-            <div
-              className="edtoolbar"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                padding: "7px 9px",
-                borderBottom: "1px solid var(--color-divider)",
-                flexWrap: "wrap",
-                background: "color-mix(in srgb, var(--color-surface) 55%, transparent)",
-              }}
-            >
-              <button className="tb" style={{ fontWeight: 700 }} onClick={() => exec("bold")} disabled={locked}>
+          <div className="border-divider mt-[20px] overflow-hidden rounded-[5px] border">
+            <div className="max-sm:bg-bg! bg-surface/55 border-divider flex flex-wrap items-center gap-[2px] border-b p-[7px_9px] max-sm:sticky max-sm:top-14 max-sm:z-4">
+              <button
+                className="font-body text-text/72 hover:bg-text/8 hover:text-text min-w-7 cursor-pointer rounded-[3px] border border-transparent bg-transparent px-[8px] py-[3px] text-[13px] leading-[normal] font-bold whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-35 max-lg:min-h-[38px] max-lg:min-w-[38px]"
+                onClick={() => exec("bold")}
+                disabled={locked}
+              >
                 B
               </button>
-              <button className="tb" style={{ fontStyle: "italic" }} onClick={() => exec("italic")} disabled={locked}>
+              <button
+                className="font-body text-text/72 hover:bg-text/8 hover:text-text min-w-7 cursor-pointer rounded-[3px] border border-transparent bg-transparent px-[8px] py-[3px] text-[13px] leading-[normal] whitespace-nowrap italic disabled:cursor-not-allowed disabled:opacity-35 max-lg:min-h-[38px] max-lg:min-w-[38px]"
+                onClick={() => exec("italic")}
+                disabled={locked}
+              >
                 I
               </button>
               <Divider />
-              <button className="tb" onClick={() => exec("formatBlock", "h2")} disabled={locked}>
+              <button
+                className="font-body text-text/72 hover:bg-text/8 hover:text-text min-w-7 cursor-pointer rounded-[3px] border border-transparent bg-transparent px-[8px] py-[3px] text-[13px] leading-[normal] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-35 max-lg:min-h-[38px] max-lg:min-w-[38px]"
+                onClick={() => exec("formatBlock", "h2")}
+                disabled={locked}
+              >
                 H2
               </button>
-              <button className="tb" onClick={() => exec("formatBlock", "h3")} disabled={locked}>
+              <button
+                className="font-body text-text/72 hover:bg-text/8 hover:text-text min-w-7 cursor-pointer rounded-[3px] border border-transparent bg-transparent px-[8px] py-[3px] text-[13px] leading-[normal] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-35 max-lg:min-h-[38px] max-lg:min-w-[38px]"
+                onClick={() => exec("formatBlock", "h3")}
+                disabled={locked}
+              >
                 H3
               </button>
-              <button className="tb" onClick={() => exec("formatBlock", "p")} disabled={locked}>
+              <button
+                className="font-body text-text/72 hover:bg-text/8 hover:text-text min-w-7 cursor-pointer rounded-[3px] border border-transparent bg-transparent px-[8px] py-[3px] text-[13px] leading-[normal] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-35 max-lg:min-h-[38px] max-lg:min-w-[38px]"
+                onClick={() => exec("formatBlock", "p")}
+                disabled={locked}
+              >
                 ¶
               </button>
               <Divider />
-              <button className="tb" onClick={() => exec("insertUnorderedList")} disabled={locked}>
-                •<span className="hide-sm"> List</span>
+              <button
+                className="font-body text-text/72 hover:bg-text/8 hover:text-text min-w-7 cursor-pointer rounded-[3px] border border-transparent bg-transparent px-[8px] py-[3px] text-[13px] leading-[normal] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-35 max-lg:min-h-[38px] max-lg:min-w-[38px]"
+                onClick={() => exec("insertUnorderedList")}
+                disabled={locked}
+              >
+                •<span className="max-sm:hidden!"> List</span>
               </button>
-              <button className="tb" onClick={() => exec("insertOrderedList")} disabled={locked}>
-                1.<span className="hide-sm"> List</span>
+              <button
+                className="font-body text-text/72 hover:bg-text/8 hover:text-text min-w-7 cursor-pointer rounded-[3px] border border-transparent bg-transparent px-[8px] py-[3px] text-[13px] leading-[normal] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-35 max-lg:min-h-[38px] max-lg:min-w-[38px]"
+                onClick={() => exec("insertOrderedList")}
+                disabled={locked}
+              >
+                1.<span className="max-sm:hidden!"> List</span>
               </button>
               <Divider />
-              <div className="hide-sm" style={{ display: "flex", alignItems: "center", gap: 6, opacity: state.plan === "pro" ? 1 : 0.45 }}>
+              <div
+                className={`flex items-center gap-1.5 max-sm:hidden! ${state.plan === "pro" ? "opacity-100" : "opacity-45"}`}
+              >
                 <Select
-                  style={{ width: 130, minHeight: 28, fontSize: 12 }}
+                  className="min-h-[28px]! w-[130px]! text-[12px]!"
                   disabled={fontLocked}
                   value={font}
-                  onChange={(e) => patchProposal(pr.id, { font: e.target.value })}
+                  onChange={(e) =>
+                    patchProposal(pr.id, { font: e.target.value })
+                  }
                 >
                   <option>Lora</option>
                   <option>Cormorant Garamond</option>
                   <option>System sans</option>
                 </Select>
                 <Select
-                  style={{ width: 64, minHeight: 28, fontSize: 12 }}
+                  className="min-h-[28px]! w-[64px]! text-[12px]!"
                   disabled={fontLocked}
                   value={fontSize}
-                  onChange={(e) => patchProposal(pr.id, { fontSize: e.target.value })}
+                  onChange={(e) =>
+                    patchProposal(pr.id, { fontSize: e.target.value })
+                  }
                 >
                   <option>14</option>
                   <option>15</option>
@@ -294,42 +293,42 @@ export default function ProposalEditorPage() {
                   <option>18</option>
                 </Select>
                 {state.plan === "free" ? (
-                  <button className="lnk" style={{ fontSize: 10, letterSpacing: "0.08em" }} onClick={() => go("/plans")}>
+                  <button
+                    className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 text-[10px] tracking-[0.08em] no-underline hover:underline"
+                    onClick={() => go("/plans")}
+                  >
                     PRO
                   </button>
                 ) : null}
               </div>
-              <span style={{ flex: 1 }} />
-              <button className="tb" onClick={commentSelection} disabled={locked} title="Comment on selection">
-                +<span className="hide-sm"> Comment on selection</span>
+              <span className="flex-1" />
+              <button
+                className="font-body text-text/72 hover:bg-text/8 hover:text-text min-w-7 cursor-pointer rounded-[3px] border border-transparent bg-transparent px-[8px] py-[3px] text-[13px] leading-[normal] whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-35 max-lg:min-h-[38px] max-lg:min-w-[38px]"
+                onClick={commentSelection}
+                disabled={locked}
+                title="Comment on selection"
+              >
+                +<span className="max-sm:hidden!"> Comment on selection</span>
               </button>
             </div>
             <div
               ref={bodyRef}
-              className="pbody"
               contentEditable={!locked}
               suppressContentEditableWarning
-              style={{
-                padding: "26px 30px 40px",
-                minHeight: 420,
-                outline: "none",
-                fontSize: `${fontSize}px`,
-                fontFamily: FONT_STACKS[font],
-                lineHeight: 1.72,
-              }}
+              className={`data-[anch=1]:[&_p]:hover:bg-accent/12 data-[anch=1]:[&_p]:hover:outline-accent/30 data-[anch=1]:[&_li]:hover:bg-accent/12 data-[anch=1]:[&_li]:hover:outline-accent/30 [&_h2]:font-heading [&_h3]:font-heading min-h-[420px] px-[30px] pt-[26px] pb-10 leading-[1.72] outline-none max-sm:px-4 max-sm:pt-[18px] max-sm:pb-8 [&_h2]:mt-[22px] [&_h2]:mb-2 [&_h2]:text-[22px] [&_h2]:leading-[1.12] [&_h2]:font-semibold [&_h2]:tracking-[-0.015em] [&_h3]:mt-[18px] [&_h3]:mb-1.5 [&_h3]:text-lg [&_h3]:leading-[1.12] [&_h3]:font-semibold [&_h3]:tracking-[-0.015em] [&_li]:mb-1 data-[anch=1]:[&_li]:hover:cursor-text data-[anch=1]:[&_li]:hover:outline [&_ol]:mb-3 [&_ol]:pl-[22px] [&_ol]:leading-[1.7] [&_p]:mb-3 [&_p]:leading-[1.72] data-[anch=1]:[&_p]:hover:cursor-text data-[anch=1]:[&_p]:hover:outline [&_ul]:mb-3 [&_ul]:pl-[22px] [&_ul]:leading-[1.7] ${font === "Lora" ? "font-body" : font === "Cormorant Garamond" ? "font-heading" : "font-sans"} ${fontSize === "14" ? "text-sm" : fontSize === "15" ? "text-[15px]" : fontSize === "16" ? "text-base" : "text-lg"}`}
             />
           </div>
           {locked ? (
-            <div
-              style={{
-                marginTop: 12,
-                fontSize: 12.5,
-                color: "color-mix(in srgb, var(--color-text) 55%, transparent)",
-              }}
-            >
-              Accepted on {pr.sentAt ? fmtDate(new Date(pr.sentAt).toISOString().slice(0, 10)) : "—"} — this
-              proposal is locked. The live terms now belong to{" "}
-              <button className="lnk" onClick={() => go(`/projects/${pr.projectId}`)}>
+            <div className="text-text/55 mt-[12px] text-[12.5px]">
+              Accepted on{" "}
+              {pr.sentAt
+                ? fmtDate(new Date(pr.sentAt).toISOString().slice(0, 10))
+                : "—"}{" "}
+              — this proposal is locked. The live terms now belong to{" "}
+              <button
+                className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 no-underline hover:underline"
+                onClick={() => go(`/projects/${pr.projectId}`)}
+              >
                 the project
               </button>
               .
@@ -337,17 +336,17 @@ export default function ProposalEditorPage() {
           ) : null}
         </div>
 
-        <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 96 }}>
-          <div style={{ border: "1px solid var(--color-divider)", borderRadius: 5, padding: 15, display: "flex", flexDirection: "column", gap: 11 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <aside className="sticky top-[96px] flex flex-col gap-[18px]">
+          <div className="border-divider flex flex-col gap-[11px] rounded-[5px] border p-[15px]">
+            <div className="flex items-center justify-between">
               <Tag status={statusKey(pr.status) as StatusKey}>{pr.status}</Tag>
-              <span style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 45%, transparent)" }}>
+              <span className="text-text/45 text-[11px]">
                 {pr.lastSaved
                   ? `Last saved at ${new Date(pr.lastSaved).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`
                   : "Never saved"}
               </span>
             </div>
-            <div style={{ fontSize: 12.5, color: "color-mix(in srgb, var(--color-text) 60%, transparent)", lineHeight: 1.5 }}>
+            <div className="text-text/60 text-[12.5px] leading-[1.5]">
               {locked
                 ? "Accepted and locked. The project is live."
                 : pr.status === "Client Commented"
@@ -356,80 +355,60 @@ export default function ProposalEditorPage() {
                     ? "Sent — waiting on the client. No decline button: it simply stays here until they respond."
                     : "Draft — nothing is visible to the client until you send."}
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div className="flex gap-[8px]">
               <button
-                className="btn btn-secondary"
-                style={{ flex: 1 }}
+                className="font-heading text-text border-divider hover:bg-text/7 active:bg-text/14 inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
                 onClick={() => saveProposal(pr.id, currentHtml())}
                 disabled={locked}
               >
                 Save
               </button>
               <button
-                className="btn btn-primary"
-                style={{ flex: 1 }}
+                className="font-heading text-text border-accent text-accent hover:bg-accent/12 active:bg-accent/22 inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
                 onClick={() => sendProposal(pr.id, currentHtml())}
                 disabled={locked}
               >
                 {pr.status === "Draft" ? "Send" : "Send revision"}
               </button>
             </div>
-            <hr className="hr" style={{ margin: "2px 0" }} />
-            <div style={{ display: "flex", flexDirection: "column", gap: 5, fontSize: 12 }}>
+            <hr className="bg-divider m-[2px_0] my-4 h-px border-0" />
+            <div className="flex flex-col gap-[5px] text-[12px]">
               <SummaryRow label="Client" value={c.name} />
               <SummaryRow label="Price" value={money(pr.price)} />
               <SummaryRow label="Due" value={fmtDate(pr.due)} />
             </div>
-            <button className="btn btn-secondary btn-block" onClick={() => previewPortal(pr.projectId)}>
+            <button
+              className="font-heading text-text border-divider hover:bg-text/7 active:bg-text/14 mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+              onClick={() => previewPortal(pr.projectId)}
+            >
               Preview client view
             </button>
           </div>
 
           <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                justifyContent: "space-between",
-                borderBottom: "1px solid var(--color-divider)",
-                paddingBottom: 7,
-                marginBottom: 10,
-              }}
-            >
-              <h6 style={{ margin: 0, color: "color-mix(in srgb, var(--color-text) 50%, transparent)" }}>
+            <div className="border-divider mb-[10px] flex items-baseline justify-between border-b pb-[7px]">
+              <h6 className="font-heading text-text/50 m-0 text-[13px] leading-[1.12] font-semibold tracking-[0.08em] uppercase">
                 Comments
               </h6>
-              <span style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 40%, transparent)" }}>
+              <span className="text-text/40 text-[11px]">
                 {openComments ? `${openComments} open` : ""}
               </span>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div className="flex flex-col gap-[10px]">
               {pr.comments.map((cm) => (
                 <div
                   key={cm.id}
-                  style={{
-                    borderLeft: "2px solid var(--color-accent)",
-                    padding: "2px 0 2px 10px",
-                    opacity: cm.resolved ? 0.22 : 1,
-                  }}
+                  className={`border-accent border-l-2 py-0.5 pl-2.5 ${cm.resolved ? "opacity-22" : "opacity-100"}`}
                 >
-                  <div style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 45%, transparent)" }}>
+                  <div className="text-text/45 text-[11px]">
                     {cm.author} · {ago(cm.ts)}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 11.5,
-                      fontStyle: "italic",
-                      color: "color-mix(in srgb, var(--color-text) 50%, transparent)",
-                      margin: "3px 0",
-                    }}
-                  >
+                  <div className="text-text/50 m-[3px_0] text-[11.5px] italic">
                     &ldquo;{cm.anchor}&rdquo;
                   </div>
-                  <div style={{ fontSize: 12.5, lineHeight: 1.5 }}>{cm.text}</div>
+                  <div className="text-[12.5px] leading-[1.5]">{cm.text}</div>
                   <button
-                    className="lnk"
-                    style={{ fontSize: 11, marginTop: 4 }}
+                    className="font-inherit text-accent mt-[4px] cursor-pointer border-0 bg-transparent p-0 text-[11px] no-underline hover:underline"
                     onClick={() => toggleProposalComment(pr.id, cm.id)}
                   >
                     {cm.resolved ? "Reopen" : "Resolve"}
@@ -437,7 +416,7 @@ export default function ProposalEditorPage() {
                 </div>
               ))}
               {pr.comments.length === 0 ? (
-                <div style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-text) 42%, transparent)", lineHeight: 1.5 }}>
+                <div className="text-text/42 text-[12px] leading-[1.5]">
                   No comments. Client comments appear here the next time you
                   open the proposal — nothing syncs live.
                 </div>
@@ -451,14 +430,14 @@ export default function ProposalEditorPage() {
 }
 
 function Divider() {
-  return <span style={{ width: 1, height: 18, background: "var(--color-divider)", margin: "0 6px" }} />;
+  return <span className="bg-divider m-[0_6px] h-[18px] w-[1px]" />;
 }
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <span style={{ color: "color-mix(in srgb, var(--color-text) 55%, transparent)" }}>{label}</span>
-      <span style={{ fontVariantNumeric: "tabular-nums" }}>{value}</span>
+    <div className="flex justify-between">
+      <span className="text-text/55">{label}</span>
+      <span className="tabular-nums">{value}</span>
     </div>
   );
 }

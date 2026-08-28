@@ -35,9 +35,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geist.variable} ${cormorant.variable} ${lora.variable}`}
+      className={`${geist.variable} ${cormorant.variable} ${lora.variable} [&::-webkit-scrollbar-corner]:bg-bg [&::-webkit-scrollbar-thumb]:border-bg [&::-webkit-scrollbar-thumb]:bg-text/16 [&::-webkit-scrollbar-thumb:hover]:bg-text/28 [&::-webkit-scrollbar-track]:bg-bg scheme-dark [&::-webkit-scrollbar]:h-[10px] [&::-webkit-scrollbar]:w-[10px] [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:border-2`}
     >
-      <body>
+      <body className="bg-bg font-body text-text selection:bg-accent/30 m-0 text-[15px] leading-[1.55] font-normal">
         <TRPCReactProvider>
           <EzlaneProvider>{children}</EzlaneProvider>
         </TRPCReactProvider>

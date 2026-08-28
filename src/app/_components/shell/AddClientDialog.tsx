@@ -12,8 +12,10 @@ export function AddClientDialog() {
 
   if (!state.addClientOpen) return null;
 
-  const set = (key: keyof typeof nc) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setNc((s) => ({ ...s, [key]: e.target.value }));
+  const set =
+    (key: keyof typeof nc) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setNc((s) => ({ ...s, [key]: e.target.value }));
 
   const submit = (thenPropose: boolean) => {
     if (!nc.name.trim() || !nc.email.trim()) {
@@ -32,33 +34,50 @@ export function AddClientDialog() {
       title="Add a client"
       actions={
         <>
-          <button className="btn btn-secondary" onClick={closeAddClient}>
+          <button
+            className="font-heading text-text border-divider hover:bg-text/7 active:bg-text/14 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+            onClick={closeAddClient}
+          >
             Cancel
           </button>
-          <button className="btn btn-secondary" onClick={() => submit(false)}>
+          <button
+            className="font-heading text-text border-divider hover:bg-text/7 active:bg-text/14 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+            onClick={() => submit(false)}
+          >
             Save client
           </button>
-          <button className="btn btn-primary" onClick={() => submit(true)}>
+          <button
+            className="font-heading text-text border-accent text-accent hover:bg-accent/12 active:bg-accent/22 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+            onClick={() => submit(true)}
+          >
             Save &amp; write proposal
           </button>
         </>
       }
     >
-      <div style={{ fontSize: 13, marginBottom: 11 }}>
+      <div className="mb-[11px] text-[13px]">
         Nothing is sent to them now. Their first contact with EZLane is the
         proposal you send.
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+      <div className="flex flex-col gap-[11px]">
         <Field label="Name">
-          <Input value={nc.name} onChange={set("name")} placeholder="Priya Raman" />
+          <Input
+            value={nc.name}
+            onChange={set("name")}
+            placeholder="Priya Raman"
+          />
         </Field>
         <Field label="Email">
-          <Input value={nc.email} onChange={set("email")} placeholder="priya@studio.co" />
+          <Input
+            value={nc.email}
+            onChange={set("email")}
+            placeholder="priya@studio.co"
+          />
         </Field>
         <Field
           label={
             <>
-              Company <span style={{ opacity: 0.5 }}>optional</span>
+              Company <span className="opacity-50">optional</span>
             </>
           }
         >
@@ -67,7 +86,7 @@ export function AddClientDialog() {
         <Field
           label={
             <>
-              Notes <span style={{ opacity: 0.5 }}>optional</span>
+              Notes <span className="opacity-50">optional</span>
             </>
           }
         >
@@ -75,7 +94,7 @@ export function AddClientDialog() {
         </Field>
       </div>
       {error ? (
-        <div style={{ fontSize: 12, color: "var(--color-accent-700)", marginTop: 8 }}>
+        <div className="text-accent-700 mt-[8px] text-[12px]">
           Name and email are both required.
         </div>
       ) : null}

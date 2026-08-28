@@ -18,84 +18,61 @@ export default function ProjectsPage() {
   const prospects = state.projects.filter((p) => p.stage === "proposal");
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
+    <div className="flex flex-col gap-[34px]">
       <section>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            borderBottom: "1px solid var(--color-divider)",
-            paddingBottom: 8,
-            marginBottom: 16,
-          }}
-        >
-          <h4 style={{ margin: 0, fontSize: 16 }}>Active</h4>
-          <span style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 45%, transparent)" }}>
-            {usageNote}
-          </span>
+        <div className="border-divider mb-[16px] flex items-baseline justify-between border-b pb-[8px]">
+          <h4 className="font-heading m-0 text-[16px] leading-[1.12] font-semibold tracking-[-0.015em]">
+            Active
+          </h4>
+          <span className="text-text/45 text-[11.5px]">{usageNote}</span>
         </div>
-        <div
-          className="cardsgrid"
-          style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 14 }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fill,_minmax(320px,_1fr))] gap-[14px] max-sm:grid-cols-1!">
           {active.map((p) => (
             <ProjectCard key={p.id} project={p} />
           ))}
         </div>
         {active.length === 0 ? (
-          <div
-            style={{
-              border: "1px dashed var(--color-divider)",
-              borderRadius: 5,
-              padding: 34,
-              textAlign: "center",
-              fontSize: 13,
-              color: "color-mix(in srgb, var(--color-text) 55%, transparent)",
-            }}
-          >
+          <div className="text-text/55 border-divider rounded-[5px] border border-dashed p-[34px] text-center text-[13px]">
             Nothing active. A project starts when a client accepts a proposal.
           </div>
         ) : null}
       </section>
 
       <section>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            borderBottom: "1px solid var(--color-divider)",
-            paddingBottom: 8,
-            marginBottom: 16,
-          }}
-        >
-          <h4 style={{ margin: 0, fontSize: 16 }}>Completed</h4>
-          <span style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 45%, transparent)" }}>
+        <div className="border-divider mb-[16px] flex items-baseline justify-between border-b pb-[8px]">
+          <h4 className="font-heading m-0 text-[16px] leading-[1.12] font-semibold tracking-[-0.015em]">
+            Completed
+          </h4>
+          <span className="text-text/45 text-[11.5px]">
             Kept in full — never archived or hidden
           </span>
         </div>
-        <table className="table tbl">
+        <table className="[&_th]:border-divider [&_th]:text-text/60 [&_td]:border-divider [&_tbody_tr]:hover:bg-text/4 max-sm:[&_tr]:border-divider max-sm:[&_td[data-l]::before]:text-text/40 w-full border-collapse text-sm leading-[1.55] max-sm:block! max-sm:w-auto! max-sm:[&_tbody]:block! [&_td]:border-b [&_td]:p-2 max-sm:[&_td]:flex! max-sm:[&_td]:w-auto! max-sm:[&_td]:items-baseline max-sm:[&_td]:justify-between max-sm:[&_td]:gap-3.5 max-sm:[&_td]:border-0! max-sm:[&_td]:px-0! max-sm:[&_td]:py-1! max-sm:[&_td]:text-left! max-sm:[&_td[data-l]::before]:flex-none max-sm:[&_td[data-l]::before]:text-[9.5px] max-sm:[&_td[data-l]::before]:tracking-[.11em] max-sm:[&_td[data-l]::before]:uppercase max-sm:[&_td[data-l]::before]:content-[attr(data-l)] [&_th]:border-b [&_th]:p-2 [&_th]:text-left [&_th]:text-[11px] [&_th]:tracking-[.08em] [&_th]:uppercase max-sm:[&_thead]:hidden max-sm:[&_tr]:mb-2.5 max-sm:[&_tr]:block! max-sm:[&_tr]:w-auto! max-sm:[&_tr]:rounded-[5px] max-sm:[&_tr]:border max-sm:[&_tr]:px-3.5 max-sm:[&_tr]:py-3">
           <tbody>
             {completed.map((p) => {
               const payLabel =
-                p.deposit && p.final ? "Paid in full" : p.deposit ? "Deposit in" : "Unpaid";
+                p.deposit && p.final
+                  ? "Paid in full"
+                  : p.deposit
+                    ? "Deposit in"
+                    : "Unpaid";
               return (
-                <tr key={p.id} className="row" onClick={() => go(`/projects/${p.id}`)}>
-                  <td style={{ fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 15 }}>
+                <tr
+                  key={p.id}
+                  className="hover:bg-text/5 cursor-pointer"
+                  onClick={() => go(`/projects/${p.id}`)}
+                >
+                  <td className="font-heading text-[15px] font-semibold">
                     {p.title}
                   </td>
-                  <td
-                    data-l="Client"
-                    style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 60%, transparent)" }}
-                  >
+                  <td data-l="Client" className="text-text/60 text-[13px]">
                     {companyOrName(client(p.clientId))}
                   </td>
-                  <td data-l="Price" style={{ fontVariantNumeric: "tabular-nums", fontSize: 13 }}>
+                  <td data-l="Price" className="text-[13px] tabular-nums">
                     {money(p.price)}
                   </td>
                   <td data-l="Payment">{payLabel}</td>
-                  <td style={{ textAlign: "right" }}>
+                  <td className="text-right">
                     <Tag status="done">Completed</Tag>
                   </td>
                 </tr>
@@ -104,7 +81,7 @@ export default function ProjectsPage() {
           </tbody>
         </table>
         {completed.length === 0 ? (
-          <div style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 45%, transparent)", padding: "8px 2px" }}>
+          <div className="text-text/45 p-[8px_2px] text-[13px]">
             No completed projects yet.
           </div>
         ) : null}
@@ -112,30 +89,35 @@ export default function ProjectsPage() {
 
       {prospects.length > 0 ? (
         <section>
-          <div style={{ borderBottom: "1px solid var(--color-divider)", paddingBottom: 8, marginBottom: 16 }}>
-            <h4 style={{ margin: 0, fontSize: 16 }}>Out for acceptance</h4>
+          <div className="border-divider mb-[16px] border-b pb-[8px]">
+            <h4 className="font-heading m-0 text-[16px] leading-[1.12] font-semibold tracking-[-0.015em]">
+              Out for acceptance
+            </h4>
           </div>
-          <table className="table tbl">
+          <table className="[&_th]:border-divider [&_th]:text-text/60 [&_td]:border-divider [&_tbody_tr]:hover:bg-text/4 max-sm:[&_tr]:border-divider max-sm:[&_td[data-l]::before]:text-text/40 w-full border-collapse text-sm leading-[1.55] max-sm:block! max-sm:w-auto! max-sm:[&_tbody]:block! [&_td]:border-b [&_td]:p-2 max-sm:[&_td]:flex! max-sm:[&_td]:w-auto! max-sm:[&_td]:items-baseline max-sm:[&_td]:justify-between max-sm:[&_td]:gap-3.5 max-sm:[&_td]:border-0! max-sm:[&_td]:px-0! max-sm:[&_td]:py-1! max-sm:[&_td]:text-left! max-sm:[&_td[data-l]::before]:flex-none max-sm:[&_td[data-l]::before]:text-[9.5px] max-sm:[&_td[data-l]::before]:tracking-[.11em] max-sm:[&_td[data-l]::before]:uppercase max-sm:[&_td[data-l]::before]:content-[attr(data-l)] [&_th]:border-b [&_th]:p-2 [&_th]:text-left [&_th]:text-[11px] [&_th]:tracking-[.08em] [&_th]:uppercase max-sm:[&_thead]:hidden max-sm:[&_tr]:mb-2.5 max-sm:[&_tr]:block! max-sm:[&_tr]:w-auto! max-sm:[&_tr]:rounded-[5px] max-sm:[&_tr]:border max-sm:[&_tr]:px-3.5 max-sm:[&_tr]:py-3">
             <tbody>
               {prospects.map((p) => {
                 const pr = state.proposals.find((x) => x.id === p.proposalId);
                 const status = pr?.status ?? p.status;
                 return (
-                  <tr key={p.id} className="row" onClick={() => go(`/projects/${p.id}`)}>
-                    <td style={{ fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 15 }}>
+                  <tr
+                    key={p.id}
+                    className="hover:bg-text/5 cursor-pointer"
+                    onClick={() => go(`/projects/${p.id}`)}
+                  >
+                    <td className="font-heading text-[15px] font-semibold">
                       {p.title}
                     </td>
-                    <td
-                      data-l="Client"
-                      style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 60%, transparent)" }}
-                    >
+                    <td data-l="Client" className="text-text/60 text-[13px]">
                       {companyOrName(client(p.clientId))}
                     </td>
-                    <td data-l="Price" style={{ fontVariantNumeric: "tabular-nums", fontSize: 13 }}>
+                    <td data-l="Price" className="text-[13px] tabular-nums">
                       {money(p.price)}
                     </td>
-                    <td style={{ textAlign: "right" }}>
-                      <Tag status={statusKey(status) as StatusKey}>{status}</Tag>
+                    <td className="text-right">
+                      <Tag status={statusKey(status) as StatusKey}>
+                        {status}
+                      </Tag>
                     </td>
                   </tr>
                 );

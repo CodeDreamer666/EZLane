@@ -11,20 +11,14 @@ export default function NotificationsPage() {
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          borderBottom: "1px solid var(--color-divider)",
-          paddingBottom: 8,
-          marginBottom: 4,
-        }}
-      >
-        <span style={{ fontSize: 12.5, color: "color-mix(in srgb, var(--color-text) 55%, transparent)" }}>
+      <div className="border-divider mb-[4px] flex items-baseline justify-between border-b pb-[8px]">
+        <span className="text-text/55 text-[12.5px]">
           Every event across proposals, contracts, payments, threads and status.
         </span>
-        <button className="lnk" style={{ fontSize: 12.5 }} onClick={() => markAllRead()}>
+        <button
+          className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 text-[12.5px] no-underline hover:underline"
+          onClick={() => markAllRead()}
+        >
           Mark all read
         </button>
       </div>
@@ -32,37 +26,24 @@ export default function NotificationsPage() {
         {notifs.map((n) => (
           <div
             key={n.id}
-            className="row"
+            className="hover:bg-text/5 border-divider flex cursor-pointer items-start gap-[13px] border-b p-[15px_6px]"
             onClick={() => {
               markRead(n.id);
-              go(n.audience === "client" ? `/projects/${n.projectId}` : n.route);
-            }}
-            style={{
-              display: "flex",
-              gap: 13,
-              alignItems: "flex-start",
-              padding: "15px 6px",
-              borderBottom: "1px solid var(--color-divider)",
+              go(
+                n.audience === "client" ? `/projects/${n.projectId}` : n.route,
+              );
             }}
           >
             <div
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                marginTop: 7,
-                flex: "none",
-                background: "var(--color-accent)",
-                opacity: n.read ? 0.22 : 1,
-              }}
+              className={`bg-accent mt-[7px] h-1.5 w-1.5 flex-none rounded-full ${n.read ? "opacity-22" : "opacity-100"}`}
             />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13.5, lineHeight: 1.5 }}>{n.title}</div>
-              <div style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 42%, transparent)", marginTop: 3 }}>
+            <div className="min-w-0 flex-1">
+              <div className="text-[13.5px] leading-[1.5]">{n.title}</div>
+              <div className="text-text/42 mt-[3px] text-[11px]">
                 {project(n.projectId)?.title ?? "—"} · {ago(n.ts)}
               </div>
             </div>
-            <Tag status="done" style={{ fontSize: 9.5 }}>
+            <Tag status="done" className="text-[9.5px]">
               {n.audience === "client" ? "Client saw this" : "You"}
             </Tag>
           </div>

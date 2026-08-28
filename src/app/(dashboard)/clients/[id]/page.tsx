@@ -15,33 +15,37 @@ export default function ClientDetailPage() {
   );
 
   return (
-    <div
-      className="twocol"
-      style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 260px", gap: 32, alignItems: "start" }}
-    >
+    <div className="grid grid-cols-[minmax(0,_1fr)_260px] items-start gap-[32px] max-lg:grid-cols-[minmax(0,1fr)]! max-lg:gap-[26px]! max-lg:[&>aside]:static!">
       <div>
-        <h3 style={{ margin: "0 0 2px" }}>{c.name}</h3>
-        <div style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 58%, transparent)" }}>
-          {c.company || "—"}
-        </div>
-        <hr className="hr" />
-        <h6 style={{ color: "color-mix(in srgb, var(--color-text) 50%, transparent)" }}>Projects</h6>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+        <h3 className="font-heading m-[0_0_2px] text-[25px] leading-[1.12] font-semibold tracking-[-0.015em]">
+          {c.name}
+        </h3>
+        <div className="text-text/58 text-[13px]">{c.company || "—"}</div>
+        <hr className="bg-divider my-4 h-px border-0" />
+        <h6 className="font-heading text-text/50 mb-2 text-[13px] leading-[1.12] font-semibold tracking-[0.08em] uppercase">
+          Projects
+        </h6>
+        <div className="mt-[12px] flex flex-col gap-[10px]">
           {projects.map((p) => {
             const status = p.completed ? "Completed" : p.status;
-            const stageLabel = p.completed ? "Completed" : p.stage === "proposal" ? "Proposal out" : "Active";
+            const stageLabel = p.completed
+              ? "Completed"
+              : p.stage === "proposal"
+                ? "Proposal out"
+                : "Active";
             return (
               <div
                 key={p.id}
-                className="card row"
+                className="border-divider hover:bg-text/5 flex cursor-pointer flex-col gap-2 gap-[8px] rounded-md border bg-transparent p-3"
                 onClick={() => go(`/projects/${p.id}`)}
-                style={{ gap: 8 }}
               >
-                <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                  <div style={{ flex: 1 }}>
-                    <div className="card-title">{p.title}</div>
-                    <div className="card-meta" style={{ marginTop: 5, gap: 14 }}>
-                      <span style={{ fontVariantNumeric: "tabular-nums" }}>{money(p.price)}</span>
+                <div className="flex items-start gap-[12px]">
+                  <div className="flex-1">
+                    <div className="font-heading text-text text-[17px] leading-[1.2] font-semibold">
+                      {p.title}
+                    </div>
+                    <div className="text-text/50 mt-[5px] flex items-center gap-1.5 gap-[14px] text-[11px]">
+                      <span className="tabular-nums">{money(p.price)}</span>
                       <span>{stageLabel}</span>
                       <span>Due {fmtDate(p.due)}</span>
                     </div>
@@ -53,33 +57,18 @@ export default function ClientDetailPage() {
           })}
         </div>
         {projects.length === 0 ? (
-          <div
-            style={{
-              border: "1px dashed var(--color-divider)",
-              borderRadius: 5,
-              padding: 26,
-              textAlign: "center",
-              fontSize: 13,
-              color: "color-mix(in srgb, var(--color-text) 55%, transparent)",
-            }}
-          >
+          <div className="text-text/55 border-divider rounded-[5px] border border-dashed p-[26px] text-center text-[13px]">
             No projects yet for this client.{" "}
-            <button className="lnk" onClick={() => newProposal(id)}>
+            <button
+              className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 no-underline hover:underline"
+              onClick={() => newProposal(id)}
+            >
               Write a proposal
             </button>
           </div>
         ) : null}
       </div>
-      <aside
-        style={{
-          border: "1px solid var(--color-divider)",
-          borderRadius: 5,
-          padding: 15,
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
+      <aside className="border-divider flex flex-col gap-[12px] rounded-[5px] border p-[15px]">
         <InfoRow label="Email" value={c.email} />
         <InfoRow label="Company" value={c.company || "—"} />
         <InfoRow label="Notes" value={c.notes || "No notes."} muted />
@@ -91,26 +80,21 @@ export default function ClientDetailPage() {
   );
 }
 
-function InfoRow({ label, value, muted = false }: { label: string; value: string; muted?: boolean }) {
+function InfoRow({
+  label,
+  value,
+  muted = false,
+}: {
+  label: string;
+  value: string;
+  muted?: boolean;
+}) {
   return (
     <div>
-      <div
-        style={{
-          fontSize: 10,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          color: "color-mix(in srgb, var(--color-text) 42%, transparent)",
-        }}
-      >
+      <div className="text-text/42 text-[10px] tracking-[0.12em] uppercase">
         {label}
       </div>
-      <div
-        style={{
-          fontSize: 13,
-          marginTop: 3,
-          color: muted ? "color-mix(in srgb, var(--color-text) 70%, transparent)" : undefined,
-        }}
-      >
+      <div className={`mt-[3px] text-[13px] ${muted ? "text-text/70" : ""}`}>
         {value}
       </div>
     </div>

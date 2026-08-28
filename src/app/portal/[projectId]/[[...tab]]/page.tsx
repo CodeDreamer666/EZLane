@@ -4,7 +4,15 @@ import { useParams } from "next/navigation";
 import type { DragEvent, MouseEvent } from "react";
 
 import { Button, Tag, type StatusKey } from "~/app/_components/ui";
-import { ago, contractText, fmtDate, fmtTime, money, received, statusKey } from "~/lib/format";
+import {
+  ago,
+  contractText,
+  fmtDate,
+  fmtTime,
+  money,
+  received,
+  statusKey,
+} from "~/lib/format";
 import { useEzlane } from "~/lib/store";
 import type { Project } from "~/lib/types";
 
@@ -21,7 +29,7 @@ export default function PortalPage() {
   const { state, project, proposal } = useEzlane();
 
   const p = project(projectId);
-  if (!p) return <div style={{ padding: 40, color: "var(--color-text)" }}>Project not found.</div>;
+  if (!p) return <div className="text-text p-[40px]">Project not found.</div>;
 
   const pr = proposal(p.proposalId);
   const unlockedVal = state.unlocked[p.id];
@@ -29,41 +37,39 @@ export default function PortalPage() {
 
   if (!unlockedVal) return <GateScreen project={p} />;
 
-  return <PortalShell project={p} proposalId={pr?.id ?? p.proposalId} tabName={tabName} isPreview={unlockedVal === "preview"} />;
+  return (
+    <PortalShell
+      project={p}
+      proposalId={pr?.id ?? p.proposalId}
+      tabName={tabName}
+      isPreview={unlockedVal === "preview"}
+    />
+  );
 }
 
 function GateScreen({ project: p }: { project: Project }) {
   const { state, setGatePw, tryUnlock } = useEzlane();
 
   return (
-    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 30 }}>
-      <div
-        style={{
-          width: "min(392px, 100%)",
-          border: "1px solid var(--color-divider)",
-          borderRadius: 6,
-          padding: 30,
-          background: "var(--color-bg)",
-          boxShadow: "var(--shadow-lg)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <div style={{ width: 18, height: 18, border: "1px solid var(--color-accent)", borderRadius: 3, display: "grid", placeItems: "center" }}>
-            <div style={{ width: 6, height: 6, background: "var(--color-accent)" }} />
+    <div className="grid min-h-screen place-items-center p-[30px]">
+      <div className="bg-bg border-divider w-[min(392px,_100%)] rounded-[6px] border p-[30px] shadow-[var(--elev-lg)]">
+        <div className="flex items-center gap-[9px]">
+          <div className="border-accent grid h-[18px] w-[18px] place-items-center rounded-[3px] border">
+            <div className="bg-accent h-[6px] w-[6px]" />
           </div>
-          <span style={{ fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 16 }}>EZLane</span>
+          <span className="font-heading text-[16px] font-semibold">EZLane</span>
         </div>
-        <h3 style={{ margin: "20px 0 6px", fontSize: 23 }}>
+        <h3 className="font-heading m-[20px_0_6px] text-[23px] leading-[1.12] font-semibold tracking-[-0.015em]">
           {p.title === "Untitled project" ? "A shared workspace" : p.title}
         </h3>
-        <p style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 58%, transparent)", margin: "0 0 18px", lineHeight: 1.6 }}>
+        <p className="text-text/58 m-[0_0_18px] text-[13px] leading-[1.6]">
           This project&apos;s workspace is password-protected. Use the password
           from your freelancer — there is no account to create.
         </p>
-        <div className="field">
+        <div className="[&>label]:text-text/70 [&>label]:mb-[5px] [&>label]:block [&>label]:text-xs [&>label]:leading-[1.55]">
           <label>Password</label>
           <input
-            className="input"
+            className="border-divider font-inherit text-text caret-accent hover:border-text/45 focus-visible:border-accent min-h-9 w-full rounded-md border bg-transparent px-2.5 py-1.5 text-sm focus-visible:outline-offset-0 max-lg:min-h-11 max-lg:text-[15px]"
             type="password"
             value={state.gatePw}
             onChange={(e) => setGatePw(e.target.value)}
@@ -74,14 +80,19 @@ function GateScreen({ project: p }: { project: Project }) {
           />
         </div>
         {state.gateError ? (
-          <div style={{ fontSize: 12, color: "var(--color-accent-700)", marginTop: 8 }}>
+          <div className="text-accent-700 mt-[8px] text-[12px]">
             That password does not match this project.
           </div>
         ) : null}
-        <Button variant="primary" block style={{ marginTop: 16 }} onClick={() => tryUnlock(p)}>
+        <Button
+          variant="primary"
+          block
+          className="mt-[16px]"
+          onClick={() => tryUnlock(p)}
+        >
           Open the workspace
         </Button>
-        <div style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 38%, transparent)", marginTop: 16, lineHeight: 1.6 }}>
+        <div className="text-text/38 mt-[16px] text-[11.5px] leading-[1.6]">
           Password protected per project. Nothing you do here creates an
           account.
         </div>
@@ -110,42 +121,54 @@ function PortalShell({
     .sort((a, b) => b.ts - a.ts);
   const unreadCount = clientNotifs.filter((n) => !n.read).length;
   const tab = tabName || "overview";
-  const welcomeShown = state.plan === "pro" && !!state.settings.welcome && tab === "overview";
+  const welcomeShown =
+    state.plan === "pro" && !!state.settings.welcome && tab === "overview";
 
   const base = `/portal/${p.id}`;
 
   return (
     <div>
-      <header style={{ borderBottom: "1px solid var(--color-divider)", background: "var(--color-bg)" }}>
-        <div className="po-head" style={{ maxWidth: 940, margin: "0 auto", padding: "16px 26px 0" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 20, height: 20, border: "1px solid var(--color-accent)", borderRadius: 3, display: "grid", placeItems: "center" }}>
-              <div style={{ width: 7, height: 7, background: "var(--color-accent)" }} />
+      <header className="bg-bg border-divider border-b">
+        <div className="m-[0_auto] max-w-[940px] p-[16px_26px_0] max-lg:px-[18px]! max-lg:pt-3.5!">
+          <div className="flex items-center gap-[12px]">
+            <div className="border-accent grid h-[20px] w-[20px] place-items-center rounded-[3px] border">
+              <div className="bg-accent h-[7px] w-[7px]" />
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 17 }}>{brandName}</div>
-              <div style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 45%, transparent)" }}>
+            <div className="min-w-0 flex-1">
+              <div className="font-heading text-[17px] font-semibold">
+                {brandName}
+              </div>
+              <div className="text-text/45 text-[11.5px]">
                 {p.title} · for {c.company || c.name}
               </div>
             </div>
             {isPreview ? (
-              <button className="btn btn-secondary" style={{ fontSize: 12, padding: "5px 11px" }} onClick={() => go(`/projects/${p.id}`)}>
+              <button
+                className="font-heading text-text border-divider hover:bg-text/7 active:bg-text/14 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent p-[5px_11px] px-[calc(var(--spacing-3)*1.2)] py-2 text-sm text-[12px] leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+                onClick={() => go(`/projects/${p.id}`)}
+              >
                 ← Back to EZLane
               </button>
             ) : null}
           </div>
-          <nav className="ponav" style={{ display: "flex", gap: 2, marginTop: 16 }}>
+          <nav className="mt-[16px] flex gap-[2px] max-lg:flex-nowrap max-lg:overflow-x-auto max-lg:[&_.nv]:px-[13px] max-lg:[&_.nv]:py-[11px] max-lg:[&_.nv]:text-sm max-lg:[&_.nv]:whitespace-nowrap">
             {TABS.map((t) => (
               <a
                 key={t.key}
-                className="nv"
-                data-cur={tab === t.key || (t.key === "overview" && !tabName) ? "1" : "0"}
-                style={{ borderRadius: "4px 4px 0 0", cursor: "pointer" }}
+                className="font-body text-text/60 hover:bg-text/6 hover:text-text data-[cur=1]:border-accent/32 data-[cur=1]:bg-accent/15 data-[cur=1]:text-text flex cursor-pointer items-center gap-[9px] rounded rounded-[4px_4px_0_0] px-[9px] py-1.5 text-[13px] no-underline data-[cur=1]:border max-lg:px-3 max-lg:py-[11px] max-lg:text-sm [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:flex-none [&_svg]:fill-none [&_svg]:stroke-current [&_svg]:opacity-90"
+                data-cur={
+                  tab === t.key || (t.key === "overview" && !tabName)
+                    ? "1"
+                    : "0"
+                }
                 onClick={() => go(`${base}/${t.key}`)}
               >
                 <span>{t.label}</span>
                 {t.key === "notifications" && unreadCount > 0 ? (
-                  <span className="tag" data-s="sent" style={{ padding: "1px 6px", fontSize: 10, marginLeft: 6 }}>
+                  <span
+                    className="data-[s=sent]:bg-accent-100 data-[s=sent]:text-accent-800 data-[s=commented]:text-accent-700 data-[s=accepted]:bg-text data-[s=accepted]:text-bg data-[s=done]:text-text/60 data-[s=warn]:text-accent-700 ml-[6px] inline-flex items-center rounded-[3px] px-[6px] py-[1px] text-[10px] tracking-[0.02em] whitespace-nowrap data-[s=commented]:bg-transparent data-[s=commented]:shadow-[inset_0_0_0_1px_var(--color-accent)] data-[s=done]:bg-transparent data-[s=done]:shadow-[inset_0_0_0_1px_var(--color-divider)] data-[s=draft]:bg-neutral-200 data-[s=draft]:text-neutral-800 data-[s=warn]:bg-transparent data-[s=warn]:shadow-[inset_0_0_0_1px_var(--color-accent-400)]"
+                    data-s="sent"
+                  >
                     {unreadCount}
                   </span>
                 ) : null}
@@ -155,36 +178,33 @@ function PortalShell({
         </div>
       </header>
 
-      <main className="po-main" style={{ maxWidth: 940, margin: "0 auto", padding: "30px 26px 70px" }}>
+      <main className="m-[0_auto] max-w-[940px] p-[30px_26px_70px] max-lg:px-[18px]! max-lg:pt-6! max-lg:pb-[70px]! max-sm:px-3.5! max-sm:pt-5! max-sm:pb-[34px]!">
         {welcomeShown ? (
-          <div
-            style={{
-              borderLeft: "2px solid var(--color-accent)",
-              padding: "2px 0 2px 14px",
-              fontSize: 13.5,
-              lineHeight: 1.65,
-              color: "color-mix(in srgb, var(--color-text) 72%, transparent)",
-              marginBottom: 26,
-            }}
-          >
+          <div className="text-text/72 border-accent mb-[26px] border-l-[2px] p-[2px_0_2px_14px] text-[13.5px] leading-[1.65]">
             {state.settings.welcome}
           </div>
         ) : null}
 
-        {tab === "proposal" ? <ProposalTab project={p} proposalId={proposalId} /> : null}
-        {tab === "contract" ? <ContractTab project={p} proposalId={proposalId} /> : null}
-        {tab === "overview" ? <OverviewTab project={p} proposalId={proposalId} /> : null}
+        {tab === "proposal" ? (
+          <ProposalTab project={p} proposalId={proposalId} />
+        ) : null}
+        {tab === "contract" ? (
+          <ContractTab project={p} proposalId={proposalId} />
+        ) : null}
+        {tab === "overview" ? (
+          <OverviewTab project={p} proposalId={proposalId} />
+        ) : null}
         {tab === "thread" ? <ThreadTab project={p} /> : null}
         {tab === "notifications" ? <NotificationsTab project={p} /> : null}
       </main>
 
-      <footer style={{ borderTop: "1px solid var(--color-divider)", padding: "20px 26px", textAlign: "center" }}>
+      <footer className="border-divider border-t p-[20px_26px] text-center">
         {!proBrand ? (
-          <div style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 38%, transparent)" }}>
-            Powered by <span style={{ fontFamily: "var(--font-heading)" }}>EZLane</span>
+          <div className="text-text/38 text-[11.5px]">
+            Powered by <span className="font-heading">EZLane</span>
           </div>
         ) : (
-          <div style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 38%, transparent)" }}>
+          <div className="text-text/38 text-[11.5px]">
             {brandName} · {state.settings.email}
           </div>
         )}
@@ -193,27 +213,49 @@ function PortalShell({
   );
 }
 
-function ProposalTab({ project: p, proposalId }: { project: Project; proposalId: string }) {
-  const { state, client, proposal, setPendingAnchor, setCommentDraft, cancelComment, addClientComment, openAccept, closeAccept, acceptProposal, go } =
-    useEzlane();
+function ProposalTab({
+  project: p,
+  proposalId,
+}: {
+  project: Project;
+  proposalId: string;
+}) {
+  const {
+    state,
+    client,
+    proposal,
+    setPendingAnchor,
+    setCommentDraft,
+    cancelComment,
+    addClientComment,
+    openAccept,
+    closeAccept,
+    acceptProposal,
+    go,
+  } = useEzlane();
   const pr = proposal(proposalId);
   if (!pr) return null;
   const c = client(p.clientId);
 
   if (pr.status === "Draft") {
     return (
-      <div style={{ border: "1px dashed var(--color-divider)", borderRadius: 5, padding: 60, textAlign: "center" }}>
-        <div style={{ fontFamily: "var(--font-heading)", fontSize: 21 }}>Nothing to review yet</div>
-        <p style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 52%, transparent)", margin: "8px auto 0", maxWidth: 340 }}>
-          {state.settings.name} has not sent the proposal for this project.
-          You will get an email when it arrives.
+      <div className="border-divider rounded-[5px] border border-dashed p-[60px] text-center">
+        <div className="font-heading text-[21px]">Nothing to review yet</div>
+        <p className="text-text/52 m-[8px_auto_0] max-w-[340px] text-[13px]">
+          {state.settings.name} has not sent the proposal for this project. You
+          will get an email when it arrives.
         </p>
       </div>
     );
   }
 
-  const deliverables = pr.deliverables.length ? pr.deliverables : p.deliverables;
-  const canAccept = pr.status === "Sent" || pr.status === "Client Commented" || pr.status === "Revised";
+  const deliverables = pr.deliverables.length
+    ? pr.deliverables
+    : p.deliverables;
+  const canAccept =
+    pr.status === "Sent" ||
+    pr.status === "Client Commented" ||
+    pr.status === "Revised";
   const accepted = pr.status === "Accepted";
   const ct = contractText(p, c, state.settings);
 
@@ -225,39 +267,44 @@ function ProposalTab({ project: p, proposalId }: { project: Project; proposalId:
 
   return (
     <div>
-      <div className="twocol" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 244px", gap: 28, alignItems: "start" }}>
+      <div className="grid grid-cols-[minmax(0,_1fr)_244px] items-start gap-[28px] max-lg:grid-cols-[minmax(0,1fr)]! max-lg:gap-[26px]! max-lg:[&>aside]:static!">
         <div>
-          <div className="g3" style={{ border: "1px solid var(--color-divider)", borderRadius: 5, padding: "18px 20px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <div className="border-divider grid grid-cols-[repeat(3,_1fr)] gap-[16px] rounded-[5px] border p-[18px_20px] max-sm:grid-cols-1!">
             <MiniStat label="Price" value={money(pr.price || p.price)} />
             <MiniStat label="Estimated due" value={fmtDate(pr.due || p.due)} />
-            <MiniStat label="Deliverables" value={String(deliverables.length)} />
-            <div style={{ gridColumn: "1 / -1" }}>
-              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.85 }}>
+            <MiniStat
+              label="Deliverables"
+              value={String(deliverables.length)}
+            />
+            <div className="col-[1_/_-1]">
+              <ul className="m-0 pl-[18px] text-[13.5px] leading-[1.85]">
                 {deliverables.map((d, i) => (
                   <li key={i}>{d}</li>
                 ))}
               </ul>
             </div>
           </div>
-          <div style={{ marginTop: 20, border: "1px solid var(--color-divider)", borderRadius: 5, padding: "26px 30px 34px" }}>
-            <div style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 42%, transparent)", marginBottom: 14 }}>
+          <div className="border-divider mt-[20px] rounded-[5px] border p-[26px_30px_34px]">
+            <div className="text-text/42 mb-[14px] text-[11.5px]">
               Click any paragraph to comment on it.
             </div>
             <div
-              className="pbody"
+              className="data-[anch=1]:[&_p]:hover:bg-accent/12 data-[anch=1]:[&_p]:hover:outline-accent/30 data-[anch=1]:[&_li]:hover:bg-accent/12 data-[anch=1]:[&_li]:hover:outline-accent/30 [&_h2]:font-heading [&_h3]:font-heading text-[15px] leading-[1.75] max-sm:px-4 max-sm:pt-[18px] max-sm:pb-8 [&_h2]:mt-[22px] [&_h2]:mb-2 [&_h2]:text-[22px] [&_h2]:leading-[1.12] [&_h2]:font-semibold [&_h2]:tracking-[-0.015em] [&_h3]:mt-[18px] [&_h3]:mb-1.5 [&_h3]:text-lg [&_h3]:leading-[1.12] [&_h3]:font-semibold [&_h3]:tracking-[-0.015em] [&_li]:mb-1 data-[anch=1]:[&_li]:hover:cursor-text data-[anch=1]:[&_li]:hover:outline [&_ol]:mb-3 [&_ol]:pl-[22px] [&_ol]:leading-[1.7] [&_p]:mb-3 [&_p]:leading-[1.72] data-[anch=1]:[&_p]:hover:cursor-text data-[anch=1]:[&_p]:hover:outline [&_ul]:mb-3 [&_ul]:pl-[22px] [&_ul]:leading-[1.7]"
               data-anch="1"
               onClick={pickAnchor}
-              style={{ fontSize: 15, lineHeight: 1.75 }}
               dangerouslySetInnerHTML={{ __html: pr.body }}
             />
           </div>
         </div>
-        <aside style={{ display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 24 }}>
-          <div style={{ border: "1px solid var(--color-divider)", borderRadius: 5, padding: 15, display: "flex", flexDirection: "column", gap: 10 }}>
-            <Tag status={statusKey(pr.status) as StatusKey} style={{ alignSelf: "flex-start" }}>
+        <aside className="sticky top-[24px] flex flex-col gap-[16px]">
+          <div className="border-divider flex flex-col gap-[10px] rounded-[5px] border p-[15px]">
+            <Tag
+              status={statusKey(pr.status) as StatusKey}
+              className="self-start"
+            >
               {pr.status}
             </Tag>
-            <div style={{ fontSize: 12.5, color: "color-mix(in srgb, var(--color-text) 62%, transparent)", lineHeight: 1.55 }}>
+            <div className="text-text/62 text-[12.5px] leading-[1.55]">
               {accepted
                 ? "You accepted these terms. The agreement is ready to sign."
                 : "Read it, comment on anything unclear, and accept when you are happy. Accepting is what starts the work."}
@@ -268,56 +315,71 @@ function ProposalTab({ project: p, proposalId }: { project: Project; proposalId:
               </Button>
             ) : null}
             {accepted ? (
-              <Button variant="secondary" block onClick={() => go(`/portal/${p.id}/contract`)}>
+              <Button
+                variant="secondary"
+                block
+                onClick={() => go(`/portal/${p.id}/contract`)}
+              >
                 Go to the contract →
               </Button>
             ) : null}
           </div>
           <div>
-            <div style={{ borderBottom: "1px solid var(--color-divider)", paddingBottom: 7, marginBottom: 10 }}>
-              <h6 style={{ margin: 0, color: "color-mix(in srgb, var(--color-text) 50%, transparent)" }}>Your comments</h6>
+            <div className="border-divider mb-[10px] border-b pb-[7px]">
+              <h6 className="font-heading text-text/50 m-0 text-[13px] leading-[1.12] font-semibold tracking-[0.08em] uppercase">
+                Your comments
+              </h6>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div className="flex flex-col gap-[10px]">
               {pr.comments.map((cm) => (
-                <div key={cm.id} style={{ borderLeft: "2px solid var(--color-accent)", padding: "2px 0 2px 10px" }}>
-                  <div style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 45%, transparent)" }}>
+                <div
+                  key={cm.id}
+                  className="border-accent border-l-[2px] p-[2px_0_2px_10px]"
+                >
+                  <div className="text-text/45 text-[11px]">
                     {cm.author} · {ago(cm.ts)}
                   </div>
-                  <div style={{ fontSize: 11.5, fontStyle: "italic", color: "color-mix(in srgb, var(--color-text) 50%, transparent)", margin: "3px 0" }}>
+                  <div className="text-text/50 m-[3px_0] text-[11.5px] italic">
                     &ldquo;{cm.anchor}&rdquo;
                   </div>
-                  <div style={{ fontSize: 12.5, lineHeight: 1.5 }}>{cm.text}</div>
+                  <div className="text-[12.5px] leading-[1.5]">{cm.text}</div>
                 </div>
               ))}
               {pr.comments.length === 0 ? (
-                <div style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-text) 42%, transparent)", lineHeight: 1.5 }}>
+                <div className="text-text/42 text-[12px] leading-[1.5]">
                   No comments yet.
                 </div>
               ) : null}
             </div>
             {state.pendingAnchor ? (
-              <div style={{ marginTop: 12, border: "1px solid var(--color-accent-400)", borderRadius: 4, padding: 10 }}>
-                <div style={{ fontSize: 11, fontStyle: "italic", color: "color-mix(in srgb, var(--color-text) 50%, transparent)", marginBottom: 6 }}>
+              <div className="border-accent-400 mt-[12px] rounded-md border p-[10px]">
+                <div className="text-text/50 mb-[6px] text-[11px] italic">
                   &ldquo;{state.pendingAnchor}&rdquo;
                 </div>
                 <textarea
-                  className="input"
+                  className="border-divider font-inherit text-text caret-accent hover:border-text/45 focus-visible:border-accent min-h-9 w-full rounded-md border bg-transparent px-2.5 py-1.5 text-sm text-[12.5px] focus-visible:outline-offset-0 max-lg:min-h-11 max-lg:text-[15px]"
                   rows={3}
-                  style={{ fontSize: 12.5 }}
                   placeholder="Your comment…"
                   value={state.commentDraft}
                   onChange={(e) => setCommentDraft(e.target.value)}
                 />
-                <div style={{ display: "flex", gap: 7, marginTop: 8 }}>
-                  <button className="btn btn-secondary" style={{ flex: 1, fontSize: 12, padding: 4 }} onClick={cancelComment}>
+                <div className="mt-[8px] flex gap-[7px]">
+                  <button
+                    className="font-heading text-text border-divider hover:bg-text/7 active:bg-text/14 inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent p-[4px] px-[calc(var(--spacing-3)*1.2)] py-2 text-sm text-[12px] leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+                    onClick={cancelComment}
+                  >
                     Cancel
                   </button>
                   <button
-                    className="btn btn-primary"
-                    style={{ flex: 1, fontSize: 12, padding: 4 }}
+                    className="font-heading text-text border-accent text-accent hover:bg-accent/12 active:bg-accent/22 inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent p-[4px] px-[calc(var(--spacing-3)*1.2)] py-2 text-sm text-[12px] leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
                     onClick={() => {
                       if (!state.commentDraft.trim()) return;
-                      addClientComment(p.id, pr.id, state.pendingAnchor, state.commentDraft);
+                      addClientComment(
+                        p.id,
+                        pr.id,
+                        state.pendingAnchor,
+                        state.commentDraft,
+                      );
                     }}
                   >
                     Comment
@@ -330,31 +392,48 @@ function ProposalTab({ project: p, proposalId }: { project: Project; proposalId:
       </div>
 
       {state.acceptOpen ? (
-        <div className="dialog-backdrop" style={{ zIndex: 70 }} onClick={closeAccept}>
-          <div className="dialog" style={{ width: "min(480px, 100%)" }} onClick={(e) => e.stopPropagation()}>
-            <div className="dialog-title">You&apos;re agreeing to these terms</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 9, fontSize: 13.5 }}>
+        <div
+          className="fixed inset-0 z-50 z-[70] grid place-items-center bg-neutral-900/50 p-4"
+          onClick={closeAccept}
+        >
+          <div
+            className="border-divider bg-surface flex w-[min(440px,100%)] w-[min(480px,_100%)] flex-col gap-3 rounded-lg border p-4 shadow-lg max-sm:max-h-[88vh] max-sm:w-[calc(100vw-26px)] max-sm:overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="font-heading text-xl font-semibold">
+              You&apos;re agreeing to these terms
+            </div>
+            <div className="flex flex-col gap-[9px] text-[13.5px]">
               <Row label="Price" value={money(pr.price)} />
-              <Row label="Payment" value={`${ct.half} now, ${ct.half} on completion`} />
+              <Row
+                label="Payment"
+                value={`${ct.half} now, ${ct.half} on completion`}
+              />
               <Row label="Estimated due" value={fmtDate(pr.due)} />
               <div>
-                <div style={{ color: "color-mix(in srgb, var(--color-text) 55%, transparent)", marginBottom: 5 }}>Deliverables</div>
-                <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
+                <div className="text-text/55 mb-[5px]">Deliverables</div>
+                <ul className="m-0 pl-[18px] leading-[1.8]">
                   {deliverables.map((d, i) => (
                     <li key={i}>{d}</li>
                   ))}
                 </ul>
               </div>
             </div>
-            <div className="dialog-body" style={{ fontSize: 12.5 }}>
+            <div className="text-sm text-[12.5px] opacity-85">
               Accepting locks the proposal and creates the project. The
               agreement is generated next, for you to sign.
             </div>
-            <div className="dialog-actions">
-              <button className="btn btn-secondary" onClick={closeAccept}>
+            <div className="mt-2 flex justify-end gap-2">
+              <button
+                className="font-heading text-text border-divider hover:bg-text/7 active:bg-text/14 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+                onClick={closeAccept}
+              >
                 Not yet
               </button>
-              <button className="btn btn-primary" onClick={() => acceptProposal(p, pr)}>
+              <button
+                className="font-heading text-text border-accent text-accent hover:bg-accent/12 active:bg-accent/22 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+                onClick={() => acceptProposal(p, pr)}
+              >
                 Accept these terms
               </button>
             </div>
@@ -365,20 +444,28 @@ function ProposalTab({ project: p, proposalId }: { project: Project; proposalId:
   );
 }
 
-function ContractTab({ project: p, proposalId }: { project: Project; proposalId: string }) {
+function ContractTab({
+  project: p,
+  proposalId,
+}: {
+  project: Project;
+  proposalId: string;
+}) {
   const { state, client, proposal, setSignName, signContract } = useEzlane();
   const pr = proposal(proposalId);
   const c = client(p.clientId);
   const ct = contractText(p, c, state.settings);
-  const deliverables = pr?.deliverables.length ? pr.deliverables : p.deliverables;
+  const deliverables = pr?.deliverables.length
+    ? pr.deliverables
+    : p.deliverables;
   const available = pr?.status === "Accepted";
 
   if (!available) {
     return (
-      <div style={{ maxWidth: 720 }}>
-        <div style={{ border: "1px dashed var(--color-divider)", borderRadius: 5, padding: 60, textAlign: "center" }}>
-          <div style={{ fontFamily: "var(--font-heading)", fontSize: 21 }}>No agreement yet</div>
-          <p style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 52%, transparent)", margin: "8px auto 0", maxWidth: 360 }}>
+      <div className="max-w-[720px]">
+        <div className="border-divider rounded-[5px] border border-dashed p-[60px] text-center">
+          <div className="font-heading text-[21px]">No agreement yet</div>
+          <p className="text-text/52 m-[8px_auto_0] max-w-[360px] text-[13px]">
             The agreement is generated the moment you accept the proposal — it
             uses those same terms, so there is nothing new to read.
           </p>
@@ -388,84 +475,86 @@ function ContractTab({ project: p, proposalId }: { project: Project; proposalId:
   }
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <h3 style={{ margin: "0 0 4px" }}>Agreement</h3>
-      <div style={{ fontSize: 12.5, color: "color-mix(in srgb, var(--color-text) 50%, transparent)" }}>
-        Generated from the terms you accepted. Nothing here was written by
-        hand.
+    <div className="max-w-[720px]">
+      <h3 className="font-heading m-[0_0_4px] text-[25px] leading-[1.12] font-semibold tracking-[-0.015em]">
+        Agreement
+      </h3>
+      <div className="text-text/50 text-[12.5px]">
+        Generated from the terms you accepted. Nothing here was written by hand.
       </div>
-      <div
-        style={{
-          border: "1px solid var(--color-divider)",
-          borderRadius: 5,
-          padding: "28px 30px",
-          marginTop: 18,
-          fontSize: 14,
-          lineHeight: 1.8,
-          color: "color-mix(in srgb, var(--color-text) 85%, transparent)",
-        }}
-      >
-        <p>{ct.parties}</p>
-        <p>
+      <div className="text-text/85 border-divider mt-[18px] rounded-[5px] border p-[28px_30px] text-[14px] leading-[1.8]">
+        <p className="mb-3">{ct.parties}</p>
+        <p className="mb-3">
           <strong>Scope.</strong> The Contractor will deliver:
         </p>
-        <ul style={{ paddingLeft: 20 }}>
+        <ul className="pl-[20px]">
           {deliverables.map((d, i) => (
             <li key={i}>{d}</li>
           ))}
         </ul>
-        <p>
-          <strong>Fee.</strong> {money(p.price)} in total, paid in two halves: {ct.half} on signature and {ct.half} on completion.
-          Invoices are settled by bank transfer within 14 days.
+        <p className="mb-3">
+          <strong>Fee.</strong> {money(p.price)} in total, paid in two halves:{" "}
+          {ct.half} on signature and {ct.half} on completion. Invoices are
+          settled by bank transfer within 14 days.
         </p>
-        <p>
-          <strong>Timing.</strong> Estimated completion {fmtDate(p.due)}. Dates move if material or decisions are late.
+        <p className="mb-3">
+          <strong>Timing.</strong> Estimated completion {fmtDate(p.due)}. Dates
+          move if material or decisions are late.
         </p>
-        <p>
-          <strong>Ownership.</strong> On final payment, the delivered work transfers to the Client. The Contractor may show the work publicly unless
-          asked not to.
+        <p className="mb-3">
+          <strong>Ownership.</strong> On final payment, the delivered work
+          transfers to the Client. The Contractor may show the work publicly
+          unless asked not to.
         </p>
       </div>
-      <div style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 42%, transparent)", marginTop: 12, lineHeight: 1.6 }}>
-        This is a plain-language agreement, not legal advice. If the project
-        or the sums involved warrant it, have a lawyer look at it before
-        signing.
+      <div className="text-text/42 mt-[12px] text-[11.5px] leading-[1.6]">
+        This is a plain-language agreement, not legal advice. If the project or
+        the sums involved warrant it, have a lawyer look at it before signing.
       </div>
       {p.contract ? (
         <>
-          <div style={{ marginTop: 22, border: "1px solid var(--color-divider)", borderRadius: 5, padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: "var(--font-heading)", fontSize: 21 }}>{p.contract.name}</div>
-              <div style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 45%, transparent)", marginTop: 2 }}>
+          <div className="border-divider mt-[22px] flex items-center gap-[16px] rounded-[5px] border p-[18px_20px]">
+            <div className="flex-1">
+              <div className="font-heading text-[21px]">{p.contract.name}</div>
+              <div className="text-text/45 mt-[2px] text-[11.5px]">
                 signed {fmtTime(p.contract.ts)}
               </div>
             </div>
             <Tag status="accepted">Signed</Tag>
           </div>
-          <div style={{ marginTop: 14, display: "flex", gap: 12, fontSize: 12.5 }}>
-            <Tag status={p.deposit ? "accepted" : "done"}>{p.deposit ? "Deposit received" : `Deposit due — ${ct.half}`}</Tag>
-            <Tag status={p.final ? "accepted" : "done"}>{p.final ? "Final payment received" : "Final payment due on completion"}</Tag>
+          <div className="mt-[14px] flex gap-[12px] text-[12.5px]">
+            <Tag status={p.deposit ? "accepted" : "done"}>
+              {p.deposit ? "Deposit received" : `Deposit due — ${ct.half}`}
+            </Tag>
+            <Tag status={p.final ? "accepted" : "done"}>
+              {p.final
+                ? "Final payment received"
+                : "Final payment due on completion"}
+            </Tag>
           </div>
         </>
       ) : (
-        <div style={{ marginTop: 22, border: "1px solid var(--color-accent)", borderRadius: 5, padding: "18px 20px", background: "color-mix(in srgb, var(--color-accent) 6%, transparent)" }}>
-          <div style={{ fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 16 }}>Sign by typing your full name</div>
-          <div style={{ fontSize: 12.5, color: "color-mix(in srgb, var(--color-text) 60%, transparent)", margin: "4px 0 12px" }}>
-            Typing your name below counts as your signature on the terms
-            above.
+        <div className="bg-accent/6 border-accent mt-[22px] rounded-[5px] border p-[18px_20px]">
+          <div className="font-heading text-[16px] font-semibold">
+            Sign by typing your full name
           </div>
-          <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
-            <div className="field" style={{ flex: 1, minWidth: 220 }}>
+          <div className="text-text/60 m-[4px_0_12px] text-[12.5px]">
+            Typing your name below counts as your signature on the terms above.
+          </div>
+          <div className="flex flex-wrap items-end gap-[10px]">
+            <div className="[&>label]:text-text/70 min-w-[220px] flex-1 [&>label]:mb-[5px] [&>label]:block [&>label]:text-xs [&>label]:leading-[1.55]">
               <label>Full name</label>
               <input
-                className="input"
+                className="border-divider font-inherit text-text caret-accent hover:border-text/45 focus-visible:border-accent font-heading min-h-9 min-h-[42px] w-full rounded-md border bg-transparent px-2.5 py-1.5 text-sm text-[17px] focus-visible:outline-offset-0 max-lg:min-h-11 max-lg:text-[15px]"
                 value={state.signName}
                 onChange={(e) => setSignName(e.target.value)}
                 placeholder={c.name}
-                style={{ fontFamily: "var(--font-heading)", fontSize: 17, minHeight: 42 }}
               />
             </div>
-            <button className="btn btn-primary" style={{ minHeight: 42 }} onClick={() => signContract(p)}>
+            <button
+              className="font-heading text-text border-accent text-accent hover:bg-accent/12 active:bg-accent/22 inline-flex min-h-[42px] cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+              onClick={() => signContract(p)}
+            >
               Sign the agreement
             </button>
           </div>
@@ -475,7 +564,13 @@ function ContractTab({ project: p, proposalId }: { project: Project; proposalId:
   );
 }
 
-function OverviewTab({ project: p, proposalId }: { project: Project; proposalId: string }) {
+function OverviewTab({
+  project: p,
+  proposalId,
+}: {
+  project: Project;
+  proposalId: string;
+}) {
   const { state, proposal, go } = useEzlane();
   const pr = proposal(proposalId);
   const live = p.stage === "active" || p.completed;
@@ -483,14 +578,19 @@ function OverviewTab({ project: p, proposalId }: { project: Project; proposalId:
 
   if (!live) {
     return (
-      <div style={{ maxWidth: 760 }}>
-        <div style={{ border: "1px dashed var(--color-divider)", borderRadius: 5, padding: 60, textAlign: "center" }}>
-          <div style={{ fontFamily: "var(--font-heading)", fontSize: 21 }}>The project starts once you accept</div>
-          <p style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 52%, transparent)", margin: "8px auto 16px", maxWidth: 340 }}>
-            Status, progress and payment appear here as soon as the proposal
-            is accepted and signed.
+      <div className="max-w-[760px]">
+        <div className="border-divider rounded-[5px] border border-dashed p-[60px] text-center">
+          <div className="font-heading text-[21px]">
+            The project starts once you accept
+          </div>
+          <p className="text-text/52 m-[8px_auto_16px] max-w-[340px] text-[13px]">
+            Status, progress and payment appear here as soon as the proposal is
+            accepted and signed.
           </p>
-          <Button variant="primary" onClick={() => go(`/portal/${p.id}/proposal`)}>
+          <Button
+            variant="primary"
+            onClick={() => go(`/portal/${p.id}/proposal`)}
+          >
             Read the proposal
           </Button>
         </div>
@@ -498,43 +598,39 @@ function OverviewTab({ project: p, proposalId }: { project: Project; proposalId:
     );
   }
 
-  const deliverables = pr?.deliverables.length ? pr.deliverables : p.deliverables;
+  const deliverables = pr?.deliverables.length
+    ? pr.deliverables
+    : p.deliverables;
 
   return (
-    <div style={{ maxWidth: 760 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    <div className="max-w-[760px]">
+      <div className="flex items-center gap-[12px]">
         <Tag status={statusKey(statusLabel) as StatusKey}>{statusLabel}</Tag>
-        <span style={{ fontSize: 12.5, color: "color-mix(in srgb, var(--color-text) 50%, transparent)" }}>
+        <span className="text-text/50 text-[12.5px]">
           Updated by {state.settings.name}
         </span>
       </div>
-      <h3 style={{ margin: "10px 0 18px" }}>{p.title}</h3>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ flex: 1, height: 5, background: "color-mix(in srgb, var(--color-text) 12%, transparent)", borderRadius: 3, overflow: "hidden" }}>
-          <div style={{ height: "100%", background: "var(--color-accent)", width: `${p.progress}%` }} />
+      <h3 className="font-heading m-[10px_0_18px] text-[25px] leading-[1.12] font-semibold tracking-[-0.015em]">
+        {p.title}
+      </h3>
+      <div className="flex items-center gap-[12px]">
+        <div className="bg-text/12 h-[5px] flex-1 overflow-hidden rounded-[3px]">
+          <svg className="text-accent block h-full w-full" aria-hidden="true">
+            <rect width={`${p.progress}%`} height="100%" fill="currentColor" />
+          </svg>
         </div>
-        <span style={{ fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>{p.progress}%</span>
+        <span className="text-[12.5px] tabular-nums">{p.progress}%</span>
       </div>
-      <div
-        className="g3"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 1,
-          background: "var(--color-divider)",
-          border: "1px solid var(--color-divider)",
-          borderRadius: 5,
-          overflow: "hidden",
-          marginTop: 22,
-        }}
-      >
+      <div className="bg-divider border-divider mt-[22px] grid grid-cols-[repeat(3,_1fr)] gap-[1px] overflow-hidden rounded-[5px] border max-sm:grid-cols-1!">
         <MiniStat label="Price" value={money(p.price)} big />
         <MiniStat label="Estimated due" value={fmtDate(p.due)} big />
         <MiniStat label="Paid" value={money(received(p))} big />
       </div>
-      <div style={{ marginTop: 24 }}>
-        <h6 style={{ color: "color-mix(in srgb, var(--color-text) 50%, transparent)" }}>Deliverables</h6>
-        <ul style={{ margin: "10px 0 0", paddingLeft: 18, fontSize: 14, lineHeight: 1.9 }}>
+      <div className="mt-[24px]">
+        <h6 className="font-heading text-text/50 mb-2 text-[13px] leading-[1.12] font-semibold tracking-[0.08em] uppercase">
+          Deliverables
+        </h6>
+        <ul className="m-[10px_0_0] pl-[18px] text-[14px] leading-[1.9]">
           {deliverables.map((d, i) => (
             <li key={i}>{d}</li>
           ))}
@@ -545,10 +641,21 @@ function OverviewTab({ project: p, proposalId }: { project: Project; proposalId:
 }
 
 function ThreadTab({ project: p }: { project: Project }) {
-  const { state, composer, setComposer, sendMessage, setDragOver, clearDragOver, approveWork } = useEzlane();
+  const {
+    state,
+    composer,
+    setComposer,
+    sendMessage,
+    setDragOver,
+    clearDragOver,
+    approveWork,
+  } = useEzlane();
   const comp = composer(p.id);
   const dropActive = state.dragOver === p.id;
-  const canApprove = (p.stage === "active" || p.completed) && p.status !== "Approved" && !!p.contract;
+  const canApprove =
+    (p.stage === "active" || p.completed) &&
+    p.status !== "Approved" &&
+    !!p.contract;
 
   const onDragOver = (e: DragEvent) => {
     e.preventDefault();
@@ -562,34 +669,40 @@ function ThreadTab({ project: p }: { project: Project }) {
   };
 
   return (
-    <div style={{ maxWidth: 760 }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: "1px solid var(--color-divider)", paddingBottom: 8 }}>
-        <h4 style={{ margin: 0, fontSize: 16 }}>Messages</h4>
-        <span style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 45%, transparent)" }}>
+    <div className="max-w-[760px]">
+      <div className="border-divider flex items-baseline justify-between border-b pb-[8px]">
+        <h4 className="font-heading m-0 text-[16px] leading-[1.12] font-semibold tracking-[-0.015em]">
+          Messages
+        </h4>
+        <span className="text-text/45 text-[11.5px]">
           New messages appear when you reload — nothing is live
         </span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column" }}>
+      <div className="flex flex-col">
         {p.messages
           .slice()
           .sort((a, b) => a.ts - b.ts)
           .map((m) => (
-            <div key={m.id} style={{ padding: "15px 2px", borderBottom: "1px solid var(--color-divider)" }}>
+            <div key={m.id} className="border-divider border-b p-[15px_2px]">
               {m.side === "system" ? (
-                <div style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 42%, transparent)", fontStyle: "italic" }}>
+                <div className="text-text/42 text-[11.5px] italic">
                   {m.text} · {fmtTime(m.ts)}
                 </div>
               ) : (
                 <div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 9 }}>
-                    <span style={{ fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 14 }}>{m.from}</span>
-                    <span style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 40%, transparent)" }}>{fmtTime(m.ts)}</span>
+                  <div className="flex items-baseline gap-[9px]">
+                    <span className="font-heading text-[14px] font-semibold">
+                      {m.from}
+                    </span>
+                    <span className="text-text/40 text-[11px]">
+                      {fmtTime(m.ts)}
+                    </span>
                   </div>
-                  <div className="msg" style={{ fontSize: 14, lineHeight: 1.7, marginTop: 6, maxWidth: "62ch" }}>
+                  <div className="mt-[6px] max-w-[62ch] text-[14px] leading-[1.7] max-sm:max-w-full!">
                     {m.text}
                   </div>
                   {m.file ? (
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 9, border: "1px solid var(--color-divider)", borderRadius: 4, padding: "6px 11px", fontSize: 12 }}>
+                    <div className="border-divider mt-[9px] inline-flex items-center gap-[8px] rounded-md border p-[6px_11px] text-[12px]">
                       {m.file}
                     </div>
                   ) : null}
@@ -598,72 +711,80 @@ function ThreadTab({ project: p }: { project: Project }) {
             </div>
           ))}
         {p.messages.length === 0 ? (
-          <div style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 45%, transparent)", padding: "16px 2px" }}>No messages yet.</div>
+          <div className="text-text/45 p-[16px_2px] text-[13px]">
+            No messages yet.
+          </div>
         ) : null}
       </div>
       <div
-        style={{
-          marginTop: 18,
-          border: dropActive ? "1px solid var(--color-accent)" : "1px solid var(--color-divider)",
-          background: dropActive ? "color-mix(in srgb, var(--color-accent) 8%, transparent)" : undefined,
-          borderRadius: 5,
-          padding: 13,
-        }}
+        className={`mt-[18px] rounded-[5px] border p-[13px] ${dropActive ? "border-accent bg-accent/8" : "border-divider"}`}
         onDragOver={onDragOver}
         onDragLeave={clearDragOver}
         onDrop={onDrop}
       >
         <textarea
-          className="input"
+          className="border-divider font-inherit text-text caret-accent hover:border-text/45 focus-visible:border-accent min-h-9 w-full rounded-md border border-0 bg-transparent p-0 px-2.5 py-1.5 text-sm text-[14px] focus-visible:outline-offset-0 max-lg:min-h-11 max-lg:text-[15px]"
           rows={3}
-          style={{ border: 0, padding: 0, fontSize: 14 }}
           placeholder="Reply…"
           value={comp.text}
           onChange={(e) => setComposer(p.id, { text: e.target.value })}
         />
         {comp.file ? (
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid var(--color-accent-400)", borderRadius: 4, padding: "5px 10px", fontSize: 12, color: "var(--color-accent-700)", marginBottom: 10 }}>
+          <div className="text-accent-700 border-accent-400 mb-[10px] inline-flex items-center gap-[8px] rounded-md border p-[5px_10px] text-[12px]">
             {comp.file}
-            <button className="lnk" style={{ fontSize: 13 }} onClick={() => setComposer(p.id, { file: "" })}>
+            <button
+              className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 text-[13px] no-underline hover:underline"
+              onClick={() => setComposer(p.id, { file: "" })}
+            >
               ×
             </button>
           </div>
         ) : null}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11.5, color: "color-mix(in srgb, var(--color-text) 40%, transparent)", flex: 1 }}>
-            {dropActive ? "Drop to attach" : "Drag a file into this box to attach it"}
+        <div className="mt-[8px] flex flex-wrap items-center gap-[10px]">
+          <span className="text-text/40 flex-1 text-[11.5px]">
+            {dropActive
+              ? "Drop to attach"
+              : "Drag a file into this box to attach it"}
           </span>
-          <label className="btn btn-secondary" style={{ cursor: "pointer" }}>
+          <label className="font-heading text-text border-divider hover:bg-text/7 active:bg-text/14 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11">
             Attach
             <input
               type="file"
-              style={{ display: "none" }}
+              className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) setComposer(p.id, { file: f.name });
               }}
             />
           </label>
-          <button className="btn btn-primary" onClick={() => sendMessage(p.id, "client")}>
+          <button
+            className="font-heading text-text border-accent text-accent hover:bg-accent/12 active:bg-accent/22 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+            onClick={() => sendMessage(p.id, "client")}
+          >
             Send message
           </button>
         </div>
       </div>
       {canApprove ? (
-        <div style={{ marginTop: 20, border: "1px solid var(--color-accent)", borderRadius: 5, padding: "16px 18px", display: "flex", alignItems: "center", gap: 16, background: "color-mix(in srgb, var(--color-accent) 6%, transparent)" }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 15 }}>Happy with the work?</div>
-            <div style={{ fontSize: 12.5, color: "color-mix(in srgb, var(--color-text) 60%, transparent)", marginTop: 3 }}>
+        <div className="bg-accent/6 border-accent mt-[20px] flex items-center gap-[16px] rounded-[5px] border p-[16px_18px]">
+          <div className="flex-1">
+            <div className="font-heading text-[15px] font-semibold">
+              Happy with the work?
+            </div>
+            <div className="text-text/60 mt-[3px] text-[12.5px]">
               Approving is a deliberate step, separate from messaging.
             </div>
           </div>
-          <button className="btn btn-primary" onClick={() => approveWork(p)}>
+          <button
+            className="font-heading text-text border-accent text-accent hover:bg-accent/12 active:bg-accent/22 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent px-[calc(var(--spacing-3)*1.2)] py-2 text-sm leading-[1.2] font-semibold whitespace-nowrap no-underline disabled:cursor-not-allowed disabled:opacity-45 max-lg:min-h-11"
+            onClick={() => approveWork(p)}
+          >
             Approve the work
           </button>
         </div>
       ) : null}
       {p.status === "Approved" ? (
-        <div style={{ marginTop: 20, fontSize: 12.5, color: "color-mix(in srgb, var(--color-text) 55%, transparent)" }}>
+        <div className="text-text/55 mt-[20px] text-[12.5px]">
           You approved this work.
         </div>
       ) : null}
@@ -678,49 +799,71 @@ function NotificationsTab({ project: p }: { project: Project }) {
     .sort((a, b) => b.ts - a.ts);
 
   return (
-    <div style={{ maxWidth: 700 }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: "1px solid var(--color-divider)", paddingBottom: 8 }}>
-        <h4 style={{ margin: 0, fontSize: 16 }}>Activity on this project</h4>
-        <button className="lnk" style={{ fontSize: 12.5 }} onClick={() => markAllRead("client", p.id)}>
+    <div className="max-w-[700px]">
+      <div className="border-divider flex items-baseline justify-between border-b pb-[8px]">
+        <h4 className="font-heading m-0 text-[16px] leading-[1.12] font-semibold tracking-[-0.015em]">
+          Activity on this project
+        </h4>
+        <button
+          className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 text-[12.5px] no-underline hover:underline"
+          onClick={() => markAllRead("client", p.id)}
+        >
           Mark all read
         </button>
       </div>
       <div>
         {notifs.map((n) => (
-          <div key={n.id} style={{ display: "flex", gap: 13, alignItems: "flex-start", padding: "15px 4px", borderBottom: "1px solid var(--color-divider)" }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", marginTop: 7, flex: "none", background: "var(--color-accent)", opacity: n.read ? 0.22 : 1 }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13.5, lineHeight: 1.5 }}>{n.title}</div>
-              <div style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-text) 42%, transparent)", marginTop: 3 }}>
+          <div
+            key={n.id}
+            className="border-divider flex items-start gap-[13px] border-b p-[15px_4px]"
+          >
+            <div
+              className={`bg-accent mt-[7px] h-1.5 w-1.5 flex-none rounded-full ${n.read ? "opacity-22" : "opacity-100"}`}
+            />
+            <div className="flex-1">
+              <div className="text-[13.5px] leading-[1.5]">{n.title}</div>
+              <div className="text-text/42 mt-[3px] text-[11px]">
                 {ago(n.ts)} · {n.read ? "read" : "unread"}
               </div>
             </div>
           </div>
         ))}
         {notifs.length === 0 ? (
-          <div style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 45%, transparent)", padding: "16px 4px" }}>Nothing yet.</div>
+          <div className="text-text/45 p-[16px_4px] text-[13px]">
+            Nothing yet.
+          </div>
         ) : null}
       </div>
     </div>
   );
 }
 
-function MiniStat({ label, value, big = false }: { label: string; value: string; big?: boolean }) {
+function MiniStat({
+  label,
+  value,
+  big = false,
+}: {
+  label: string;
+  value: string;
+  big?: boolean;
+}) {
   return (
-    <div style={big ? { background: "var(--color-bg)", padding: "14px 16px" } : undefined}>
-      <div style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "color-mix(in srgb, var(--color-text) 42%, transparent)" }}>
+    <div className={big ? "bg-bg px-4 py-3.5" : undefined}>
+      <div className="text-text/42 text-[10px] tracking-[0.12em] uppercase">
         {label}
       </div>
-      <div style={{ fontFamily: "var(--font-heading)", fontSize: 22, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      <div className="font-heading mt-[4px] text-[22px] tabular-nums">
+        {value}
+      </div>
     </div>
   );
 }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid var(--color-divider)", paddingBottom: 7 }}>
-      <span style={{ color: "color-mix(in srgb, var(--color-text) 55%, transparent)" }}>{label}</span>
-      <span style={{ fontVariantNumeric: "tabular-nums" }}>{value}</span>
+    <div className="border-divider flex justify-between border-b pb-[7px]">
+      <span className="text-text/55">{label}</span>
+      <span className="tabular-nums">{value}</span>
     </div>
   );
 }
