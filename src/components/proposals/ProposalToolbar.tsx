@@ -83,10 +83,6 @@ export default function ProposalToolbar({
         };
     }, [moreOpen]);
 
-    /**
-     * removeFormat only strips inline styling, so links, lists and heading blocks
-     * survive it — clear those explicitly to get back to plain body text.
-     */
     const clearFormatting = () => {
         exec("removeFormat");
         exec("unlink");
