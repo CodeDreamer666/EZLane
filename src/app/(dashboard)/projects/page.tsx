@@ -1,9 +1,9 @@
 "use client";
 
-import ProjectCard from "~/app/_components/ProjectCard";
-import { Tag, type StatusKey } from "~/app/_components/ui";
+import ProjectCard from "~/components/ProjectCard";
+import { Tag, type StatusKey } from "~/components/shared";
 import { companyOrName, money, statusKey } from "~/lib/format";
-import useEzlane from "~/lib/useEzlane";
+import useEzlane from "~/hook/useEzlane";
 
 export default function ProjectsPage() {
   const { state, client, activeProjects, limit, go } = useEzlane();

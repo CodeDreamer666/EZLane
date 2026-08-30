@@ -139,6 +139,35 @@ exports.Prisma.UserScalarFieldEnum = {
   hideBranding: 'hideBranding'
 };
 
+exports.Prisma.ClientScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  email: 'email',
+  company: 'company',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProposalScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  clientId: 'clientId',
+  title: 'title',
+  price: 'price',
+  due: 'due',
+  deliverables: 'deliverables',
+  body: 'body',
+  status: 'status',
+  font: 'font',
+  fontSize: 'fontSize',
+  lastSavedAt: 'lastSavedAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SessionScalarFieldEnum = {
   id: 'id',
   expiresAt: 'expiresAt',
@@ -156,6 +185,7 @@ exports.Prisma.AccountScalarFieldEnum = {
   providerId: 'providerId',
   userId: 'userId',
   accessToken: 'accessToken',
+  issuer: 'issuer',
   refreshToken: 'refreshToken',
   idToken: 'idToken',
   accessTokenExpiresAt: 'accessTokenExpiresAt',
@@ -194,8 +224,18 @@ exports.Plan = exports.$Enums.Plan = {
   PRO: 'PRO'
 };
 
+exports.ProposalStatus = exports.$Enums.ProposalStatus = {
+  DRAFT: 'DRAFT',
+  SENT: 'SENT',
+  CLIENT_COMMENTED: 'CLIENT_COMMENTED',
+  REVISED: 'REVISED',
+  ACCEPTED: 'ACCEPTED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
+  Client: 'Client',
+  Proposal: 'Proposal',
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification'

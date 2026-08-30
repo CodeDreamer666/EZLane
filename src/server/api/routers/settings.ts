@@ -1,64 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import sanitize from "./sanitize";;
-
-const invoiceSchema = z.object({
-    invoiceDisplayName: z
-        .string()
-        .trim()
-        .min(1, "Invoice display name is required")
-        .max(120, "Invoice display name must be at most 120 characters"),
-    invoiceContact: z
-        .string()
-        .trim()
-        .min(1, "Contact info is required")
-        .max(120, "Contact info must be at most 120 characters"),
-    invoicePrefix: z
-        .string()
-        .trim()
-        .min(1, "Invoice prefix is required")
-        .max(20, "Invoice prefix must be at most 20 characters")
-        .regex(
-            /^[A-Z0-9-]+$/,
-            "Invoice prefix must be uppercase letters, numbers and hyphens only (e.g. MD-2026-)",
-        ),
-});
-
-const planSchema = z.object({
-    plan: z
-        .string()
-        .trim()
-        .transform((v) => v.toUpperCase())
-        .pipe(
-            z.enum(["FREE", "PRO"], {
-                error: () => "Plan must be FREE or PRO",
-            }),
-        ),
-});
-
-const brandingSchema = z.object({
-    accentColour: z
-        .string()
-        .trim()
-        .regex(
-            /^#[0-9A-Fa-f]{6}$/,
-            "Accent colour must be a hex value like #4F46E5",
-        ),
-    logo: z
-        .string()
-        .trim()
-        .min(1, "Logo is required")
-        .max(255, "Logo must be at most 255 characters")
-        .optional()
-        .or(z.literal("")),
-    welcomeMessage: z
-        .string()
-        .trim()
-        .min(1, "Welcome message is required")
-        .max(255, "Welcome message must be at most 255 characters"),
-    hideBranding: z.boolean(),
-});
+import sanitize from "~/lib/sanitize";
 
 export const settingsRouter = createTRPCRouter({
     getProfile: protectedProcedure.query(async ({ ctx }) => {
@@ -85,13 +28,15 @@ export const settingsRouter = createTRPCRouter({
     }),
 
     updateProfile: protectedProcedure
-        .input(z.object({
-            name: z
-                .string()
-                .trim()
-                .min(1, "Display name is required")
-                .max(120, "Display name must be at most 120 characters"),
-        }))
+        .input(
+            z.object({
+                name: z
+                    .string()
+                    .trim()
+                    .min(1, "Display name is required")
+                    .max(120, "Display name must be at most 120 characters"),
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
             try {
                 const cleanName = sanitize(input.name);
@@ -114,7 +59,7 @@ export const settingsRouter = createTRPCRouter({
                 if (err instanceof TRPCError) throw err;
 
                 console.error("[settings.updateProfile] unexpected error", err);
-                
+
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "We couldn't save your changes. Please try again.",
@@ -132,8 +77,10 @@ export const settingsRouter = createTRPCRouter({
                     invoicePrefix: true,
                 },
             });
+
             if (!user)
                 throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+
             return {
                 invoiceDisplayName: user.invoiceDisplayName ?? "",
                 invoiceContact: user.invoiceContact ?? "",
@@ -141,7 +88,9 @@ export const settingsRouter = createTRPCRouter({
             };
         } catch (err) {
             if (err instanceof TRPCError) throw err;
+
             console.error("[settings.getInvoice] unexpected error", err);
+
             throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: "We couldn't save your changes. Please try again.",
@@ -150,14 +99,33 @@ export const settingsRouter = createTRPCRouter({
     }),
 
     updateInvoice: protectedProcedure
-        .input(invoiceSchema)
+        .input(z.object({
+            invoiceDisplayName: z
+                .string()
+                .trim()
+                .min(1, "Invoice display name is required")
+                .max(120, "Invoice display name must be at most 120 characters"),
+            invoiceContact: z
+                .string()
+                .trim()
+                .min(1, "Contact info is required")
+                .max(120, "Contact info must be at most 120 characters"),
+            invoicePrefix: z
+                .string()
+                .trim()
+                .min(1, "Invoice prefix is required")
+                .max(20, "Invoice prefix must be at most 20 characters")
+                .regex(
+                    /^[A-Z0-9-]+$/,
+                    "Invoice prefix must be uppercase letters, numbers and hyphens only (e.g. MD-2026-)",
+                ),
+        }))
         .mutation(async ({ ctx, input }) => {
             try {
                 const cleanDisplayName = sanitize(input.invoiceDisplayName);
                 const cleanContact = sanitize(input.invoiceContact);
                 const cleanPrefix = sanitize(input.invoicePrefix);
 
-                // Re-validate after sanitization for length safety
                 if (cleanDisplayName.length < 1 || cleanDisplayName.length > 120) {
                     throw new TRPCError({
                         code: "BAD_REQUEST",
@@ -165,18 +133,21 @@ export const settingsRouter = createTRPCRouter({
                             "Invoice display name must be between 1 and 120 characters",
                     });
                 }
+
                 if (cleanContact.length < 1 || cleanContact.length > 120) {
                     throw new TRPCError({
                         code: "BAD_REQUEST",
                         message: "Contact info must be between 1 and 120 characters",
                     });
                 }
+
                 if (cleanPrefix.length < 1 || cleanPrefix.length > 20) {
                     throw new TRPCError({
                         code: "BAD_REQUEST",
                         message: "Invoice prefix must be between 1 and 20 characters",
                     });
                 }
+
                 if (!/^[A-Z0-9-]+$/.test(cleanPrefix)) {
                     throw new TRPCError({
                         code: "BAD_REQUEST",
@@ -198,10 +169,13 @@ export const settingsRouter = createTRPCRouter({
                         invoicePrefix: true,
                     },
                 });
+
                 return updated;
             } catch (err) {
                 if (err instanceof TRPCError) throw err;
+
                 console.error("[settings.updateInvoice] unexpected error", err);
+
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "We couldn't save your changes. Please try again.",
@@ -215,12 +189,16 @@ export const settingsRouter = createTRPCRouter({
                 where: { id: ctx.session.user.id },
                 select: { plan: true },
             });
+
             if (!user)
                 throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+
             return { plan: user.plan };
         } catch (err) {
             if (err instanceof TRPCError) throw err;
+
             console.error("[settings.getPlan] unexpected error", err);
+
             throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: "We couldn't save your changes. Please try again.",
@@ -229,7 +207,17 @@ export const settingsRouter = createTRPCRouter({
     }),
 
     updatePlan: protectedProcedure
-        .input(planSchema)
+        .input(z.object({
+            plan: z
+                .string()
+                .trim()
+                .transform((v) => v.toUpperCase())
+                .pipe(
+                    z.enum(["FREE", "PRO"], {
+                        error: () => "Plan must be FREE or PRO",
+                    }),
+                ),
+        }))
         .mutation(async ({ ctx, input }) => {
             try {
                 const updated = await ctx.db.user.update({
@@ -237,10 +225,13 @@ export const settingsRouter = createTRPCRouter({
                     data: { plan: input.plan },
                     select: { plan: true },
                 });
+
                 return updated;
             } catch (err) {
                 if (err instanceof TRPCError) throw err;
+
                 console.error("[settings.updatePlan] unexpected error", err);
+
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "We couldn't save your changes. Please try again.",
@@ -260,8 +251,10 @@ export const settingsRouter = createTRPCRouter({
                     plan: true,
                 },
             });
+
             if (!user)
                 throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+
             return {
                 accentColour: user.accentColour ?? "#5b93ff",
                 logo: user.logo ?? "",
@@ -271,7 +264,9 @@ export const settingsRouter = createTRPCRouter({
             };
         } catch (err) {
             if (err instanceof TRPCError) throw err;
+
             console.error("[settings.getBranding] unexpected error", err);
+
             throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: "We couldn't save your changes. Please try again.",
@@ -280,15 +275,38 @@ export const settingsRouter = createTRPCRouter({
     }),
 
     updateBranding: protectedProcedure
-        .input(brandingSchema)
+        .input(z.object({
+            accentColour: z
+                .string()
+                .trim()
+                .regex(
+                    /^#[0-9A-Fa-f]{6}$/,
+                    "Accent colour must be a hex value like #4F46E5",
+                ),
+            logo: z
+                .string()
+                .trim()
+                .min(1, "Logo is required")
+                .max(255, "Logo must be at most 255 characters")
+                .optional()
+                .or(z.literal("")),
+            welcomeMessage: z
+                .string()
+                .trim()
+                .min(1, "Welcome message is required")
+                .max(255, "Welcome message must be at most 255 characters"),
+            hideBranding: z.boolean(),
+        }))
         .mutation(async ({ ctx, input }) => {
             try {
                 const user = await ctx.db.user.findUnique({
                     where: { id: ctx.session.user.id },
                     select: { plan: true },
                 });
+
                 if (!user)
                     throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+                
                 if (user.plan !== "PRO") {
                     throw new TRPCError({
                         code: "FORBIDDEN",
@@ -307,12 +325,14 @@ export const settingsRouter = createTRPCRouter({
                         message: "Accent colour must be a hex value like #4F46E5",
                     });
                 }
+
                 if (cleanLogo.length > 255) {
                     throw new TRPCError({
                         code: "BAD_REQUEST",
                         message: "Logo must be at most 255 characters",
                     });
                 }
+
                 if (cleanWelcome.length < 1 || cleanWelcome.length > 255) {
                     throw new TRPCError({
                         code: "BAD_REQUEST",
@@ -335,10 +355,13 @@ export const settingsRouter = createTRPCRouter({
                         hideBranding: true,
                     },
                 });
+
                 return updated;
             } catch (err) {
                 if (err instanceof TRPCError) throw err;
+
                 console.error("[settings.updateBranding] unexpected error", err);
+
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "We couldn't save your changes. Please try again.",
@@ -363,8 +386,10 @@ export const settingsRouter = createTRPCRouter({
                     hideBranding: true,
                 },
             });
+            
             if (!user)
                 throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+
             return {
                 name: user.name,
                 plan: user.plan,
@@ -376,9 +401,12 @@ export const settingsRouter = createTRPCRouter({
                 welcomeMessage: user.welcomeMessage ?? "",
                 hideBranding: user.hideBranding ?? false,
             };
+
         } catch (err) {
             if (err instanceof TRPCError) throw err;
+
             console.error("[settings.getAll] unexpected error", err);
+            
             throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: "We couldn't save your changes. Please try again.",

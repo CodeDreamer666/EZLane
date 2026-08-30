@@ -1,8 +1,8 @@
 "use client";
 
-import { Tag } from "~/app/_components/ui";
+import { Tag } from "~/components/shared";
 import { ago } from "~/lib/format";
-import useEzlane from "~/lib/useEzlane";
+import useEzlane from "~/hook/useEzlane";
 
 export default function NotificationsPage() {
   const { state, project, markRead, markAllRead, go } = useEzlane();

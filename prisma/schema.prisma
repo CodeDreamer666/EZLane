@@ -20,6 +20,14 @@ enum Plan {
     PRO
 }
 
+enum ProposalStatus {
+    DRAFT
+    SENT
+    CLIENT_COMMENTED
+    REVISED
+    ACCEPTED
+}
+
 model User {
     id                 String    @id
     name               String //@db.Text
@@ -38,9 +46,51 @@ model User {
     logo               String?
     welcomeMessage     String?
     hideBranding       Boolean   @default(false)
+    clients            Client[]
+    proposals          Proposal[]
 
     @@unique([email])
     @@map("user")
+}
+
+model Client {
+    id        String     @id @default(cuid())
+    userId    String
+    user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    name      String
+    email     String
+    company   String?
+    notes     String?
+    proposals Proposal[]
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @default(now()) @updatedAt
+
+    @@index([userId])
+    @@map("client")
+}
+
+model Proposal {
+    id           String         @id @default(cuid())
+    userId       String
+    user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    clientId     String
+    client       Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+    title        String
+    price        Int            @default(0)
+    due          String         @default("")
+    deliverables String[]
+    body         String
+    status       ProposalStatus @default(DRAFT)
+    font         String?
+    fontSize     String?
+    lastSavedAt  DateTime?
+    sentAt       DateTime?
+    createdAt    DateTime       @default(now())
+    updatedAt    DateTime       @default(now()) @updatedAt
+
+    @@index([userId])
+    @@index([clientId])
+    @@map("proposal")
 }
 
 model Session {
@@ -65,6 +115,7 @@ model Account {
     userId                String
     user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
     accessToken           String? //@db.Text
+    issuer                String?
     refreshToken          String? //@db.Text
     idToken               String? //@db.Text
     accessTokenExpiresAt  DateTime?
