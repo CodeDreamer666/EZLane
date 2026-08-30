@@ -306,7 +306,7 @@ export const settingsRouter = createTRPCRouter({
 
                 if (!user)
                     throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-                
+
                 if (user.plan !== "PRO") {
                     throw new TRPCError({
                         code: "FORBIDDEN",
@@ -386,7 +386,7 @@ export const settingsRouter = createTRPCRouter({
                     hideBranding: true,
                 },
             });
-            
+
             if (!user)
                 throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
 
@@ -406,7 +406,7 @@ export const settingsRouter = createTRPCRouter({
             if (err instanceof TRPCError) throw err;
 
             console.error("[settings.getAll] unexpected error", err);
-            
+
             throw new TRPCError({
                 code: "INTERNAL_SERVER_ERROR",
                 message: "We couldn't save your changes. Please try again.",

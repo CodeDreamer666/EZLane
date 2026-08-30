@@ -1,14 +1,21 @@
 export default function SummaryRow({
-  label,
-  value,
+    label,
+    value,
 }: {
-  label: string;
-  value: string;
+    label: string;
+    value: string;
 }) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-text/55">{label}</span>
-      <span className="tabular-nums">{value}</span>
-    </div>
-  );
+    return (
+        <div className="border-text/10 bg-bg/50 flex min-w-0 flex-col gap-[3px] rounded-md border p-[9px_10px]">
+            <span className="text-text/38 text-[9.5px] font-medium tracking-[0.1em] uppercase">
+                {label}
+            </span>
+            <span
+                className="font-heading text-text truncate text-[14.5px] leading-tight font-semibold tabular-nums"
+                title={value}
+            >
+                {value}
+            </span>
+        </div>
+    );
 }

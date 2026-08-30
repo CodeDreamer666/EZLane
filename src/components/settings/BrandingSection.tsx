@@ -20,10 +20,7 @@ import z from "zod";
 export default function BrandingSection() {
     const { showMessage } = useStatusMessage();
     const utils = api.useUtils();
-
     const { data: brandingData, isLoading, error } = api.settings.getBranding.useQuery();
-
-    const isProPlan = brandingData?.plan === "PRO";
 
     const [form, setForm] = useState({
         accentColour: "",
@@ -91,11 +88,11 @@ export default function BrandingSection() {
         mutation.mutate(result.data);
     };
 
-    const opacity = isProPlan ? 1 : 0.45;
+    const isProPlan = brandingData?.plan === "PRO";
 
-    if (isLoading) return <LoadingScreen />
+    if (isLoading) return <LoadingScreen />;
 
-    if (error || !brandingData) return <ServerError />
+    if (error || !brandingData) return <ServerError />;
 
     return (
         <div className="flex flex-col gap-[16px]">
@@ -161,7 +158,7 @@ export default function BrandingSection() {
                     <input
                         type="file"
                         disabled={!isProPlan}
-                        className={`text-text font-inherit w-full max-w-md text-sm leading-[1.55] file:mr-3 file:cursor-pointer file:rounded-md file:border file:border-divider file:bg-transparent file:px-3 file:py-2 file:font-heading file:text-sm file:font-semibold file:leading-[1.2] file:text-text hover:file:bg-text/7 disabled:cursor-not-allowed ${opacity === 1 ? "opacity-100" : "opacity-45"}`}
+                        className={`text-text font-inherit w-full max-w-md text-sm leading-[1.55] file:mr-3 file:cursor-pointer file:rounded-md file:border file:border-divider file:bg-transparent file:px-3 file:py-2 file:font-heading file:text-sm file:font-semibold file:leading-[1.2] file:text-text hover:file:bg-text/7 disabled:cursor-not-allowed ${isProPlan ? "opacity-100" : "opacity-45"}`}
                         onChange={(e) => {
                             setForm({
                                 ...form,

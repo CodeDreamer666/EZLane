@@ -8,9 +8,9 @@ import { api } from "~/trpc/react";
 export default function ProfileSection() {
     const { showMessage } = useStatusMessage();
     const { data, isLoading, error } = api.settings.getProfile.useQuery();
+    const utils = api.useUtils();
 
     const [name, setName] = useState("");
-    const utils = api.useUtils();
 
     useEffect(() => {
         if (data?.name !== undefined) setName(data.name);
@@ -35,26 +35,21 @@ export default function ProfileSection() {
         const trimmed = name.trim();
 
         if (trimmed.length < 1) {
-            const msg = "Display name is required";
-            showMessage(msg, false);
+            showMessage("Display name is required", false);
             return;
         }
 
         if (trimmed.length > 120) {
-            const msg = "Display name must be at most 120 characters";
-            showMessage(msg, false);
+            showMessage("Display name must be at most 120 characters", false);
             return;
         }
 
         mutation.mutate({ name: trimmed });
     };
 
-    const counter = `${name.length} / 120`;
-    const counterOver = name.length > 120;
+    if (isLoading) return <LoadingScreen />;
 
-    if (isLoading) return <LoadingScreen />
-
-    if (error || !data) return <ServerError />
+    if (error || !data) return <ServerError />;
 
     return (
         <div className="flex flex-col gap-[16px]">
@@ -72,16 +67,13 @@ export default function ProfileSection() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     maxLength={120}
-                    aria-invalid={!!error}
-                    disabled={isLoading && !data}
-                    className="disabled:cursor-not-allowed"
                 />
 
                 <div className="mt-[4px] flex justify-end">
                     <span
-                        className={`text-[11px] ${counterOver ? "text-red-500" : "text-text/45"}`}
+                        className={`text-[11px] ${name.length > 120 ? "text-red-500" : "text-text/45"}`}
                     >
-                        {counter}
+                        {name.length} / 120
                     </span>
                 </div>
 

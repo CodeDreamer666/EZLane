@@ -25,7 +25,14 @@ const proposalSelect = {
 } as const;
 
 function seededBody(clientLabel: string): string {
-    return `<h2>Overview</h2><p>What the project is and why it matters to ${clientLabel}.</p><h2>Approach</h2><p>How you will work, in the order you will work.</p><h2>Terms</h2><p>50% deposit to start, 50% on completion.</p>`;
+    return `
+    <h2>Overview</h2>
+    <p>What the project is and why it matters to ${clientLabel}.</p>
+    <h2>Approach</h2>
+    <p>How you will work, in the order you will work.</p>
+    <h2>Terms</h2>
+    <p>50% deposit to start, 50% on completion.</p>
+    `;
 }
 
 export const proposalRouter = createTRPCRouter({

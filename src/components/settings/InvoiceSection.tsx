@@ -9,14 +9,13 @@ import z from "zod";
 export default function InvoiceSection() {
     const { showMessage } = useStatusMessage();
     const { data, isLoading, error } = api.settings.getInvoice.useQuery();
+    const utils = api.useUtils();
 
     const [invoiceDetails, setInvoiceDetails] = useState({
         invoiceDisplayName: "",
         invoiceContact: "",
         invoicePrefix: "",
     });
-
-    const utils = api.useUtils();
 
     useEffect(() => {
         if (data) {
@@ -76,9 +75,9 @@ export default function InvoiceSection() {
         mutation.mutate(result.data);
     };
 
-    if (isLoading) return <LoadingScreen />
+    if (isLoading) return <LoadingScreen />;
 
-    if (error || !data) return <ServerError />
+    if (error || !data) return <ServerError />;
 
     return (
         <div className="flex flex-col gap-[16px]">

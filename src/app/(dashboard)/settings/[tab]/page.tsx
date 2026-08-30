@@ -1,6 +1,5 @@
 "use client";
 import { useParams } from "next/navigation";
-
 import AccountSection from "~/components/settings/AccountSection";
 import BrandingSection from "~/components/settings/BrandingSection";
 import InvoiceSection from "~/components/settings/InvoiceSection";

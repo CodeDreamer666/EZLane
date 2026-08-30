@@ -19,7 +19,7 @@ export default function Header() {
   return (
     <header className="bg-bg/92 border-divider sticky top-0 z-[5] flex items-center gap-[14px] border-b p-[15px_30px] backdrop-blur-[6px] max-lg:gap-3! max-lg:px-[18px]! max-lg:py-[11px]! max-sm:px-3.5! max-sm:py-[9px]!">
       <button
-        className="max-lg:border-divider max-lg:text-text max-lg:hover:bg-text/8 hidden max-lg:grid max-lg:h-11 max-lg:w-11 max-lg:flex-none max-lg:cursor-pointer max-lg:place-items-center max-lg:rounded-[5px] max-lg:border max-lg:bg-transparent"
+        className="max-lg:border-divider max-lg:text-text max-lg:hover:bg-text/8 hidden cursor-pointer max-lg:grid max-lg:h-11 max-lg:w-11 max-lg:flex-none max-lg:cursor-pointer max-lg:place-items-center max-lg:rounded-[5px] max-lg:border max-lg:bg-transparent"
         onClick={toggleNav}
         aria-label="Menu"
       >

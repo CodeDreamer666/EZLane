@@ -8,6 +8,7 @@ import {
     type ReactNode,
 } from "react";
 import { uid } from "~/lib/format";
+import { LoadingScreen } from "~/components/shared";
 import seed from "~/data/seed-data";
 import type {
     AppNotification,
@@ -152,6 +153,7 @@ export const EzlaneContext = createContext<EzlaneApi | null>(null);
 
 export default function EzlaneProvider({ children }: { children: ReactNode }) {
     const [state, setState] = useState<EzlaneState>(initialState);
+    const [appReady, setAppReady] = useState(false);
     const router = useRouter();
     const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -724,6 +726,10 @@ export default function EzlaneProvider({ children }: { children: ReactNode }) {
     const setPlan = (plan: Plan) => setState((s) => ({ ...s, plan }));
 
     useEffect(() => {
+        setAppReady(true);
+    }, []);
+
+    useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
                 e.preventDefault();
@@ -802,6 +808,8 @@ export default function EzlaneProvider({ children }: { children: ReactNode }) {
         setPlan,
         go,
     };
+
+    if (!appReady) return <LoadingScreen />;
 
     return (
         <EzlaneContext.Provider value={value}>{children}</EzlaneContext.Provider>

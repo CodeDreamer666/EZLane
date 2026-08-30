@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button, Dialog, Field, Input } from "~/components/shared";
+import { Button, Dialog, Field, Input, LoadingIcon } from "~/components/shared";
 import { authClient } from "~/server/better-auth/client";
 import getFriendlyError from "~/lib/getFriendlyError";
 import useStatusMessage from "~/hook/useStatusMessage";
@@ -13,15 +13,14 @@ export default function AccountSection() {
     const { showMessage } = useStatusMessage();
     const router = useRouter();
 
+    const [signingOut, setSigningOut] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmText, setConfirmText] = useState("");
+
     const leaveToLoggedOut = () => {
         router.replace("/");
         router.refresh();
     };
-
-    const [signingOut, setSigningOut] = useState(false);
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [confirmText, setConfirmText] = useState("");
-    const [error, setError] = useState("");
 
     const handleSignOut = async () => {
         setSigningOut(true);
@@ -45,15 +44,16 @@ export default function AccountSection() {
     const deleteAccount = api.account.deleteAccount.useMutation({
         onSuccess: async () => {
             showMessage("Your account and all its data have been deleted", true);
-            try {
-                await authClient.signOut();
-            } catch {
-                // Session rows are already gone; ignore and redirect regardless.
-            }
-            leaveToLoggedOut();
+
+            await authClient.signOut();
+
+            router.replace("/");
+            router.refresh();
         },
+
         onError: (err) => {
-            setError(getFriendlyError(err));
+            const msg = getFriendlyError(err);
+            showMessage(msg, false);
         },
     });
 
@@ -61,14 +61,12 @@ export default function AccountSection() {
         if (deleteAccount.isPending) return;
         setConfirmOpen(false);
         setConfirmText("");
-        setError("");
     };
 
     const canDelete = confirmText.trim() === CONFIRM_WORD;
 
     const handleConfirmDelete = () => {
         if (!canDelete || deleteAccount.isPending) return;
-        setError("");
         deleteAccount.mutate();
     };
 
@@ -89,14 +87,21 @@ export default function AccountSection() {
                     End your session on this device. You can sign back in with Google any
                     time.
                 </div>
-                <Button
-                    variant="secondary"
-                    className="self-start disabled:cursor-not-allowed"
-                    onClick={handleSignOut}
-                    disabled={signingOut}
-                >
-                    {signingOut ? "Signing out..." : "Sign out"}
-                </Button>
+                <div className="w-full flex items-center justify-end">
+                    <Button
+                        variant="secondary"
+                        className="self-start disabled:cursor-not-allowed"
+                        onClick={handleSignOut}
+                        disabled={signingOut}
+                    >
+                        {signingOut ? (
+                            <div className="flex items-center gap-2">
+                                <LoadingIcon />
+                                Signing out...
+                            </div>
+                        ) : "Sign out"}
+                    </Button>
+                </div>
             </div>
 
             <div className="border-divider flex flex-col gap-[12px] rounded-[5px] border p-[18px_20px]">
@@ -110,13 +115,15 @@ export default function AccountSection() {
                         This is permanent and cannot be undone.
                     </span>
                 </div>
-                <Button
-                    variant="secondary"
-                    className="self-start disabled:cursor-not-allowed"
-                    onClick={() => setConfirmOpen(true)}
-                >
-                    Delete account
-                </Button>
+                <div className="w-full flex items-center justify-end">
+                    <Button
+                        variant="secondary"
+                        className="self-start disabled:cursor-not-allowed"
+                        onClick={() => setConfirmOpen(true)}
+                    >
+                        Delete account
+                    </Button>
+                </div>
             </div>
 
             <Dialog
@@ -138,7 +145,12 @@ export default function AccountSection() {
                             onClick={handleConfirmDelete}
                             disabled={!canDelete || deleteAccount.isPending}
                         >
-                            {deleteAccount.isPending ? "Deleting..." : "Delete account"}
+                            {deleteAccount.isPending ? (
+                                <div className="flex items-center gap-2">
+                                    <LoadingIcon />
+                                    Deleting...
+                                </div>
+                            ) : "Delete account"}
                         </Button>
                     </>
                 }
@@ -155,12 +167,8 @@ export default function AccountSection() {
                             onChange={(e) => setConfirmText(e.target.value)}
                             maxLength={20}
                             autoFocus
-                            aria-invalid={!!error}
                             disabled={deleteAccount.isPending}
                         />
-                        {error ? (
-                            <div className="mt-[4px] text-[11px] text-red-500">{error}</div>
-                        ) : null}
                     </Field>
                 </div>
             </Dialog>

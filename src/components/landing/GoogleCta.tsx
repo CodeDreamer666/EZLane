@@ -49,7 +49,7 @@ export default function GoogleCta({
       type="button"
       onClick={handleClick}
       disabled={busy || isPending}
-      className={`${className ?? ""} disabled:pointer-events-none disabled:opacity-60`}
+      className={`${className ?? ""} cursor-pointer disabled:pointer-events-none disabled:opacity-60`}
       aria-busy={busy}
     >
       {busy ? "Connecting…" : children}

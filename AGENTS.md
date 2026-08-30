@@ -577,6 +577,88 @@ Use the same pending pattern consistently.
 
 ---
 
+## 17A. Loading States Are for Buttons, Not Text Links
+
+Loading/pending states are a **button UI convention** in this codebase.
+
+If an action is presented as a `Button`, it should show an appropriate loading state while its async work is pending.
+
+Example:
+
+```tsx
+<Button
+    disabled={mutation.isPending}
+    onClick={handleSave}
+>
+    {mutation.isPending ? (
+        <div className="flex items-center gap-2">
+            <LoadingIcon />
+            Saving...
+        </div>
+    ) : "Save changes"}
+</Button>
+```
+
+This applies to buttons such as:
+
+- Save
+- Create
+- Submit
+- Delete
+- Archive
+- Upload
+- Update
+- Confirm
+
+However, if the same action is presented as **text or an inline link**, do not add a visible loading state to that text.
+
+For example:
+
+```tsx
+<button
+    type="button"
+    onClick={handleCreateProposal}
+    className="text-accent"
+>
+    Write a proposal
+</button>
+```
+
+or:
+
+```tsx
+<Link href="/proposals/new" className="text-accent">
+    Write a proposal
+</Link>
+```
+
+The text should remain visually unchanged while the action runs.
+
+Do not add any of the following to text links or inline clickable text:
+
+- `LoadingIcon`
+- `"Loading..."`
+- `"Creating..."`
+- replacement pending text
+- a spinner beside the text
+
+This rule is based on **how the action is presented in the UI**, not on whether it performs navigation or a mutation.
+
+Two controls may perform the exact same async action:
+
+```text
+Button: "Create proposal"
+Text:   "Write a proposal"
+```
+
+The button should show a loading state.
+
+The text link should not.
+
+The underlying action may still need protection against duplicate execution in code. For example, the handler may check `mutation.isPending`. The rule only means that inline text should not visually turn into a loading control.
+
+
+
 ## 18. JSX Should Stay Straightforward
 
 Prefer readable JSX directly inside the component.

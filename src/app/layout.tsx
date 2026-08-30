@@ -20,13 +20,13 @@ const geist = Geist({
 
 const cormorant = Cormorant_Garamond({
     subsets: ["latin"],
-    weight: ["400", "600"],
+    weight: ["400", "600", "700"],
     variable: "--font-cormorant",
 });
 
 const lora = Lora({
     subsets: ["latin"],
-    weight: ["400", "600"],
+    weight: ["400", "600", "700"],
     variable: "--font-lora",
 });
 

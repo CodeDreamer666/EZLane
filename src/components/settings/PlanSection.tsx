@@ -8,16 +8,13 @@ import { api } from "~/trpc/react";
 export default function PlanSection() {
     const { showMessage } = useStatusMessage();
     const { data: planData, isLoading, error } = api.settings.getPlan.useQuery();
-
     const router = useRouter();
     const utils = api.useUtils();
 
     const mutation = api.settings.updatePlan.useMutation({
         onSuccess: (res) => {
-            const normalized = String(res.plan).toLowerCase() as "free" | "pro";
-
             showMessage(
-                normalized === "pro"
+                res.plan === "PRO"
                     ? "You are on Pro — unlimited projects, branding unlocked"
                     : "Moved to Free — active projects stay open",
                 true,
@@ -31,24 +28,14 @@ export default function PlanSection() {
 
         onSettled: async () => {
             await utils.invalidate();
-        }
+        },
     });
 
-    const currentPlan = (
-        planData ? String(planData.plan).toLowerCase() : "free"
-    ) as "free" | "pro";
+    const isPro = planData?.plan === "PRO";
 
-    const isPro = currentPlan === "pro";
+    if (isLoading) return <LoadingScreen />;
 
-    const usageBar = isPro ? "100%" : "0%";
-
-    const usageNote = isPro
-        ? "Unlimited active projects"
-        : "Up to 2 active projects";
-
-    if (isLoading) return < LoadingScreen />
-
-    if (error || !planData) return <ServerError />
+    if (error || !planData) return <ServerError />;
 
     return (
         <div className="flex flex-col gap-[18px]">
@@ -70,10 +57,16 @@ export default function PlanSection() {
                 </div>
                 <div className="bg-text/12 h-[4px] overflow-hidden rounded-sm">
                     <svg className="text-accent block h-full w-full" aria-hidden="true">
-                        <rect width={usageBar} height="100%" fill="currentColor" />
+                        <rect
+                            width={isPro ? "100%" : "0%"}
+                            height="100%"
+                            fill="currentColor"
+                        />
                     </svg>
                 </div>
-                <div className="text-text/60 text-[12.5px]">{usageNote}</div>
+                <div className="text-text/60 text-[12.5px]">
+                    {isPro ? "Unlimited active projects" : "Up to 2 active projects"}
+                </div>
 
                 <div className="mt-[4px] flex gap-[9px]">
                     {!isPro ? (
