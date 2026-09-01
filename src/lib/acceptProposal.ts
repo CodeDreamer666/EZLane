@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import notify from "~/lib/notify";
 import type { PrismaClient } from "../../generated/prisma";
 
 /** Active (non-completed) projects allowed at once on the Free plan. Pro is unlimited. */
@@ -20,6 +21,8 @@ export async function acceptProposalAndCreateProject(
             userId: true,
             status: true,
             clientId: true,
+            title: true,
+            client: { select: { name: true } },
             project: { select: { id: true } },
         },
     });
@@ -76,6 +79,15 @@ export async function acceptProposalAndCreateProject(
             select: { id: true },
         }),
     ]);
+
+    await notify(db, {
+        userId: ownerUserId,
+        audience: "FREELANCER",
+        title: `${proposal.client.name} accepted “${proposal.title}” — the project is now active`,
+        route: `/projects/${project.id}`,
+        projectId: project.id,
+        proposalId,
+    });
 
     return { id: project.id };
 }

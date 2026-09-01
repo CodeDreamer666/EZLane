@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { projectStatusLabel } from "~/lib/format";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import notify from "~/lib/notify";
 import sanitize from "~/lib/sanitize";
 
 /** Active (non-completed) projects allowed at once on the Free plan. Pro is unlimited. */
@@ -116,7 +117,10 @@ export const projectRouter = createTRPCRouter({
             try {
                 const project = await ctx.db.project.findFirst({
                     where: { id: input.id, userId: ctx.session.user.id },
-                    select: { completed: true },
+                    select: {
+                        completed: true,
+                        proposal: { select: { title: true } },
+                    },
                 });
 
                 if (!project) throw notFound;
@@ -144,6 +148,14 @@ export const projectRouter = createTRPCRouter({
                         },
                     }),
                 ]);
+
+                await notify(ctx.db, {
+                    userId: ctx.session.user.id,
+                    audience: "CLIENT",
+                    title: `Status set to ${label} on “${project.proposal.title}”`,
+                    route: `/projects/${input.id}`,
+                    projectId: input.id,
+                });
 
                 return updated;
             } catch (err) {
@@ -201,16 +213,30 @@ export const projectRouter = createTRPCRouter({
             try {
                 const project = await ctx.db.project.findFirst({
                     where: { id: input.id, userId: ctx.session.user.id },
-                    select: { id: true },
+                    select: {
+                        id: true,
+                        proposal: { select: { title: true } },
+                    },
                 });
 
                 if (!project) throw notFound;
 
-                return await ctx.db.project.update({
+                const updated = await ctx.db.project.update({
                     where: { id: input.id },
                     data: { depositPaid: input.paid },
                     select: projectSelect,
                 });
+
+                if (input.paid)
+                    await notify(ctx.db, {
+                        userId: ctx.session.user.id,
+                        audience: "CLIENT",
+                        title: `Deposit marked received on “${project.proposal.title}”`,
+                        route: `/projects/${input.id}`,
+                        projectId: input.id,
+                    });
+
+                return updated;
             } catch (err) {
                 if (err instanceof TRPCError) throw err;
 
@@ -229,16 +255,30 @@ export const projectRouter = createTRPCRouter({
             try {
                 const project = await ctx.db.project.findFirst({
                     where: { id: input.id, userId: ctx.session.user.id },
-                    select: { id: true },
+                    select: {
+                        id: true,
+                        proposal: { select: { title: true } },
+                    },
                 });
 
                 if (!project) throw notFound;
 
-                return await ctx.db.project.update({
+                const updated = await ctx.db.project.update({
                     where: { id: input.id },
                     data: { finalPaid: input.paid },
                     select: projectSelect,
                 });
+
+                if (input.paid)
+                    await notify(ctx.db, {
+                        userId: ctx.session.user.id,
+                        audience: "CLIENT",
+                        title: `Final payment marked received on “${project.proposal.title}”`,
+                        route: `/projects/${input.id}`,
+                        projectId: input.id,
+                    });
+
+                return updated;
             } catch (err) {
                 if (err instanceof TRPCError) throw err;
 
@@ -257,7 +297,10 @@ export const projectRouter = createTRPCRouter({
             try {
                 const project = await ctx.db.project.findFirst({
                     where: { id: input.id, userId: ctx.session.user.id },
-                    select: { completed: true },
+                    select: {
+                        completed: true,
+                        proposal: { select: { title: true } },
+                    },
                 });
 
                 if (!project) throw notFound;
@@ -283,6 +326,14 @@ export const projectRouter = createTRPCRouter({
                         },
                     }),
                 ]);
+
+                await notify(ctx.db, {
+                    userId: ctx.session.user.id,
+                    audience: "CLIENT",
+                    title: `“${project.proposal.title}” marked completed — a plan slot is free`,
+                    route: `/projects/${input.id}`,
+                    projectId: input.id,
+                });
 
                 return updated;
             } catch (err) {
@@ -368,7 +419,10 @@ export const projectRouter = createTRPCRouter({
             try {
                 const project = await ctx.db.project.findFirst({
                     where: { id: input.id, userId: ctx.session.user.id },
-                    select: { id: true },
+                    select: {
+                        id: true,
+                        proposal: { select: { title: true } },
+                    },
                 });
 
                 if (!project) throw notFound;
@@ -395,6 +449,14 @@ export const projectRouter = createTRPCRouter({
                         text: cleanText,
                         file: cleanFile || null,
                     },
+                });
+
+                await notify(ctx.db, {
+                    userId: ctx.session.user.id,
+                    audience: "CLIENT",
+                    title: `${user?.name ?? "You"} posted an update on “${project.proposal.title}”`,
+                    route: `/projects/${input.id}`,
+                    projectId: input.id,
                 });
 
                 return { id: input.id };

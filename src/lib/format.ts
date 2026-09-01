@@ -1,14 +1,5 @@
-import type { Client, Project, Settings } from "~/type";
-
 export function money(n: number | undefined | null): string {
     return "$" + Number(n ?? 0).toLocaleString("en-US");
-}
-
-export function companyOrName(
-    client: Pick<Client, "company" | "name"> | undefined,
-): string {
-    if (!client) return "";
-    return client.company || client.name;
 }
 
 export function fmtDate(value: string | undefined | null): string {
@@ -36,10 +27,6 @@ export function ago(timestamp: number): string {
     if (hours < 24) return hours + (hours === 1 ? " hr ago" : " hrs ago");
     const days = Math.round(hours / 24);
     return days + (days === 1 ? " day ago" : " days ago");
-}
-
-export function uid(prefix: string): string {
-    return prefix + Math.random().toString(36).slice(2, 7);
 }
 
 const STATUS_KEY_MAP: Record<string, string> = {
@@ -84,23 +71,3 @@ export function projectStatusLabel(status: string): string {
     return PROJECT_STATUS_LABELS[status] ?? "Not started";
 }
 
-export function contractText(
-    project: Project,
-    client: Client,
-    settings: Settings,
-) {
-    return {
-        parties: `This agreement is made between ${settings.invoiceName} (“the Contractor”) and ${client.company || client.name} (“the Client”).`,
-        scope: project.deliverables,
-        price: money(project.price),
-        half: money(Math.round(project.price / 2)),
-        due: fmtDate(project.due),
-    };
-}
-
-export function received(project: Project): number {
-    return (
-        (project.deposit ? project.price / 2 : 0) +
-        (project.final ? project.price / 2 : 0)
-    );
-}

@@ -139,6 +139,18 @@ exports.Prisma.UserScalarFieldEnum = {
   hideBranding: 'hideBranding'
 };
 
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  audience: 'audience',
+  title: 'title',
+  route: 'route',
+  projectId: 'projectId',
+  proposalId: 'proposalId',
+  read: 'read',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.ClientScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -272,6 +284,11 @@ exports.Plan = exports.$Enums.Plan = {
   PRO: 'PRO'
 };
 
+exports.NotificationAudience = exports.$Enums.NotificationAudience = {
+  FREELANCER: 'FREELANCER',
+  CLIENT: 'CLIENT'
+};
+
 exports.ProposalStatus = exports.$Enums.ProposalStatus = {
   DRAFT: 'DRAFT',
   SENT: 'SENT',
@@ -290,6 +307,7 @@ exports.ProjectStatus = exports.$Enums.ProjectStatus = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  Notification: 'Notification',
   Client: 'Client',
   ClientPortal: 'ClientPortal',
   Proposal: 'Proposal',

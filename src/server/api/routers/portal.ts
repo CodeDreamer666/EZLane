@@ -3,6 +3,7 @@ import { verifyPassword } from "better-auth/crypto";
 import { z } from "zod";
 import { acceptProposalAndCreateProject } from "~/lib/acceptProposal";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import notify from "~/lib/notify";
 import sanitize from "~/lib/sanitize";
 import type { PrismaClient, ProposalStatus } from "../../../../generated/prisma";
 
@@ -373,7 +374,7 @@ export const portalRouter = createTRPCRouter({
                         clientId: portal.client.id,
                         status: { in: VISIBLE_PROPOSAL_STATUSES },
                     },
-                    select: { id: true, status: true },
+                    select: { id: true, status: true, title: true },
                 });
 
                 if (!proposal)
@@ -406,6 +407,14 @@ export const portalRouter = createTRPCRouter({
                         where: { id: proposal.id },
                         data: { status: "CLIENT_COMMENTED" },
                     });
+
+                await notify(ctx.db, {
+                    userId: portal.client.userId,
+                    audience: "FREELANCER",
+                    title: `${portal.client.name} commented on “${proposal.title}”`,
+                    route: `/proposals/${proposal.id}`,
+                    proposalId: proposal.id,
+                });
 
                 return { id: proposal.id };
             } catch (err) {
@@ -479,7 +488,7 @@ export const portalRouter = createTRPCRouter({
                     select: {
                         id: true,
                         contractName: true,
-                        proposal: { select: { status: true } },
+                        proposal: { select: { status: true, title: true } },
                     },
                 });
 
@@ -529,6 +538,14 @@ export const portalRouter = createTRPCRouter({
                     }),
                 ]);
 
+                await notify(ctx.db, {
+                    userId: portal.client.userId,
+                    audience: "FREELANCER",
+                    title: `${signerName} signed the agreement on “${project.proposal.title}”`,
+                    route: `/projects/${project.id}`,
+                    projectId: project.id,
+                });
+
                 return { id: project.id };
             } catch (err) {
                 if (err instanceof TRPCError) throw err;
@@ -554,7 +571,12 @@ export const portalRouter = createTRPCRouter({
                         id: input.projectId,
                         clientId: portal.client.id,
                     },
-                    select: { id: true, status: true, contractName: true },
+                    select: {
+                        id: true,
+                        status: true,
+                        contractName: true,
+                        proposal: { select: { title: true } },
+                    },
                 });
 
                 if (!project)
@@ -585,6 +607,14 @@ export const portalRouter = createTRPCRouter({
                         },
                     }),
                 ]);
+
+                await notify(ctx.db, {
+                    userId: portal.client.userId,
+                    audience: "FREELANCER",
+                    title: `${portal.client.name} approved the work on “${project.proposal.title}”`,
+                    route: `/projects/${project.id}`,
+                    projectId: project.id,
+                });
 
                 return { id: project.id };
             } catch (err) {
@@ -624,7 +654,10 @@ export const portalRouter = createTRPCRouter({
                         id: input.projectId,
                         clientId: portal.client.id,
                     },
-                    select: { id: true },
+                    select: {
+                        id: true,
+                        proposal: { select: { title: true } },
+                    },
                 });
 
                 if (!project)
@@ -650,6 +683,14 @@ export const portalRouter = createTRPCRouter({
                         text: cleanText,
                         file: cleanFile || null,
                     },
+                });
+
+                await notify(ctx.db, {
+                    userId: portal.client.userId,
+                    audience: "FREELANCER",
+                    title: `New message from ${portal.client.name} on “${project.proposal.title}”`,
+                    route: `/projects/${project.id}`,
+                    projectId: project.id,
                 });
 
                 return { id: project.id };

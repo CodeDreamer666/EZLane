@@ -1,6 +1,6 @@
 import { usePathname } from "next/navigation";
 
-import useEzlane from "~/hook/useEzlane";
+import { api } from "~/trpc/react";
 
 const TITLES: Record<string, string> = {
   dashboard: "Dashboard",
@@ -14,12 +14,22 @@ const TITLES: Record<string, string> = {
 
 export default function usePageTitle(): string {
   const pathname = usePathname();
-  const { client, project } = useEzlane();
   const parts = pathname.split("/").filter(Boolean);
   const root = parts[0] ?? "dashboard";
-  if (root === "clients" && parts[1]) return client(parts[1]).name;
-  if (root === "projects" && parts[1])
-    return project(parts[1])?.title ?? "Project";
-  if (root === "proposals" && parts[1]) return "Proposal editor";
+  const detailId = parts[1] ?? "";
+
+  const { data: client } = api.clients.byId.useQuery(
+    { id: detailId },
+    { enabled: root === "clients" && detailId.length > 0 },
+  );
+  const { data: project } = api.projects.byId.useQuery(
+    { id: detailId },
+    { enabled: root === "projects" && detailId.length > 0 },
+  );
+
+  if (root === "clients" && detailId) return client?.name ?? "Client";
+  if (root === "projects" && detailId)
+    return project?.proposal.title ?? "Project";
+  if (root === "proposals" && detailId) return "Proposal editor";
   return TITLES[root] ?? "Dashboard";
 }

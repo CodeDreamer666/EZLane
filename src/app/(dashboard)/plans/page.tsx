@@ -1,60 +1,52 @@
 "use client";
 
-import { Button } from "~/components/shared";
-import useEzlane from "~/hook/useEzlane";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Button, LoadingScreen, ServerError } from "~/components/shared";
+import getFriendlyError from "~/lib/getFriendlyError";
+import useStatusMessage from "~/hook/useStatusMessage";
 import { api } from "~/trpc/react";
 
 export default function PlansPage() {
-    const { state, setBilling, setPlan, go, say } = useEzlane();
-    const annual = state.billing === "annual";
+    const router = useRouter();
+    const { showMessage } = useStatusMessage();
+    const utils = api.useUtils();
+
+    const { data: planData, isLoading, error } = api.settings.getPlan.useQuery();
+
+    const [annual, setAnnual] = useState(false);
+
+    const planMutation = api.settings.updatePlan.useMutation({
+        onSuccess: (res) => {
+            showMessage(
+                res.plan === "PRO"
+                    ? "You are on Pro — unlimited projects, branding unlocked"
+                    : "Moved to Free",
+                true,
+            );
+
+            if (res.plan === "PRO") router.push("/settings/plan");
+        },
+
+        onError: (err) => {
+            showMessage(getFriendlyError(err), false);
+        },
+
+        onSettled: async () => {
+            await utils.invalidate();
+        },
+    });
+
+    const isPro = planData?.plan === "PRO";
     const priceStr = annual ? "$16" : "$20";
     const billingNote = annual
         ? "$192 billed once a year"
         : "billed monthly, cancel any time";
     const ctaLabel = annual ? "Upgrade — $192 / year" : "Upgrade — $20 / month";
 
-    const utils = api.useUtils();
-    const { data: planData } = api.settings.getPlan.useQuery(undefined, {
-        retry: false,
-    });
-    const currentPlan: "free" | "pro" = planData
-        ? (String(planData.plan).toLowerCase() as "free" | "pro")
-        : state.plan;
+    if (isLoading) return <LoadingScreen />;
 
-    const planMutation = api.settings.updatePlan.useMutation({
-        onSuccess: (res) => {
-            const normalized = String(res.plan).toLowerCase() as "free" | "pro";
-            setPlan(normalized);
-            void utils.settings.getPlan.invalidate();
-            void utils.settings.getBranding.invalidate();
-            void utils.settings.getAll.invalidate();
-        },
-        onError: () => {
-            say("We couldn't save your changes. Please try again.");
-        },
-    });
-
-    const upgrade = () => {
-        planMutation.mutate(
-            { plan: "PRO" },
-            {
-                onSuccess: () => {
-                    say("You are on Pro — unlimited projects, branding unlocked");
-                    go("/settings/plan");
-                },
-            },
-        );
-    };
-    const downgrade = () => {
-        planMutation.mutate(
-            { plan: "FREE" },
-            {
-                onSuccess: () => {
-                    say("Moved to Free");
-                },
-            },
-        );
-    };
+    if (error || !planData) return <ServerError />;
 
     return (
         <div className="max-w-[820px]">
@@ -74,7 +66,7 @@ export default function PlansPage() {
                             type="radio"
                             name="billing"
                             checked={!annual}
-                            onChange={() => setBilling("monthly")}
+                            onChange={() => setAnnual(false)}
                         />
                         Monthly
                     </label>
@@ -83,7 +75,7 @@ export default function PlansPage() {
                             type="radio"
                             name="billing"
                             checked={annual}
-                            onChange={() => setBilling("annual")}
+                            onChange={() => setAnnual(true)}
                         />
                         Annual — save $48
                     </label>
@@ -111,7 +103,7 @@ export default function PlansPage() {
                         <li>&ldquo;Powered by EZLane&rdquo; on the portal</li>
                     </ul>
                     <div className="mt-auto">
-                        {currentPlan === "free" ? (
+                        {!isPro ? (
                             <Button variant="secondary" block disabled>
                                 Your current plan
                             </Button>
@@ -119,7 +111,7 @@ export default function PlansPage() {
                             <Button
                                 variant="secondary"
                                 block
-                                onClick={downgrade}
+                                onClick={() => planMutation.mutate({ plan: "FREE" })}
                                 disabled={planMutation.isPending}
                             >
                                 {planMutation.isPending ? "Saving..." : "Move to Free"}
@@ -151,11 +143,11 @@ export default function PlansPage() {
                         <li>Font family and size in the proposal editor</li>
                     </ul>
                     <div className="mt-auto">
-                        {currentPlan === "free" ? (
+                        {!isPro ? (
                             <Button
                                 variant="primary"
                                 block
-                                onClick={upgrade}
+                                onClick={() => planMutation.mutate({ plan: "PRO" })}
                                 disabled={planMutation.isPending}
                             >
                                 {planMutation.isPending ? "Saving..." : ctaLabel}

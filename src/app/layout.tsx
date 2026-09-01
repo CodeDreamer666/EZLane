@@ -3,7 +3,6 @@ import { type Metadata } from "next";
 import { Cormorant_Garamond, Geist, Lora } from "next/font/google";
 import MessageCenter from "~/components/shell/MessageCenter";
 import AddClientModalProvider from "~/components/provider/AddClientModal";
-import EzlaneProvider from "~/components/provider/EzlaneProvider";
 import StatusMessageProvider from "~/components/provider/StatusMessage";
 import { TRPCReactProvider } from "~/trpc/react";
 
@@ -41,9 +40,7 @@ export default function RootLayout({
             <body className="bg-bg font-body text-text selection:bg-accent/30 m-0 text-[15px] leading-[1.55] font-normal">
                 <StatusMessageProvider>
                     <TRPCReactProvider>
-                        <AddClientModalProvider>
-                            <EzlaneProvider>{children}</EzlaneProvider>
-                        </AddClientModalProvider>
+                        <AddClientModalProvider>{children}</AddClientModalProvider>
                     </TRPCReactProvider>
                     <MessageCenter />
                 </StatusMessageProvider>

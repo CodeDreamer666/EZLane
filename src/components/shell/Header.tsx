@@ -4,16 +4,13 @@ import Link from "next/link";
 
 import { Button, IconBell, IconMenu } from "~/components/shared";
 import useAddClientModal from "~/hook/useAddClientModal";
-import useEzlane from "~/hook/useEzlane";
+import { api } from "~/trpc/react";
 import usePageTitle from "./usePageTitle";
 
-export default function Header() {
-  const { state, toggleNav } = useEzlane();
+export default function Header({ toggleNav }: { toggleNav: () => void }) {
   const { openModal } = useAddClientModal();
   const title = usePageTitle();
-  const unreadCount = state.notifications.filter(
-    (n) => n.audience === "freelancer" && !n.read,
-  ).length;
+  const { data: unreadCount } = api.notifications.unreadCount.useQuery();
   const unreadLabel = unreadCount ? `${unreadCount} new` : "No new";
 
   return (

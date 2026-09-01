@@ -36,6 +36,11 @@ enum ProjectStatus {
     APPROVED
 }
 
+enum NotificationAudience {
+    FREELANCER
+    CLIENT
+}
+
 model User {
     id                 String     @id
     name               String //@db.Text
@@ -57,9 +62,26 @@ model User {
     clients            Client[]
     proposals          Proposal[]
     projects           Project[]
+    notifications      Notification[]
 
     @@unique([email])
     @@map("user")
+}
+
+model Notification {
+    id         String               @id @default(cuid())
+    userId     String
+    user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+    audience   NotificationAudience
+    title      String
+    route      String
+    projectId  String?
+    proposalId String?
+    read       Boolean              @default(false)
+    createdAt  DateTime             @default(now())
+
+    @@index([userId, createdAt])
+    @@map("notification")
 }
 
 model Client {

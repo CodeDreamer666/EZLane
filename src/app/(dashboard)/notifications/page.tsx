@@ -1,13 +1,47 @@
 "use client";
 
-import { Tag } from "~/components/shared";
+import { useRouter } from "next/navigation";
+import { LoadingScreen, ServerError, Tag } from "~/components/shared";
 import { ago } from "~/lib/format";
-import useEzlane from "~/hook/useEzlane";
+import getFriendlyError from "~/lib/getFriendlyError";
+import useStatusMessage from "~/hook/useStatusMessage";
+import { api } from "~/trpc/react";
 
 export default function NotificationsPage() {
-  const { state, project, markRead, markAllRead, go } = useEzlane();
+  const router = useRouter();
+  const { showMessage } = useStatusMessage();
+  const utils = api.useUtils();
 
-  const notifs = state.notifications.slice().sort((a, b) => b.ts - a.ts);
+  const { data: notifications, isLoading, error } =
+    api.notifications.list.useQuery();
+
+  const markRead = api.notifications.markRead.useMutation({
+    onError: (err) => {
+      showMessage(getFriendlyError(err), false);
+    },
+
+    onSettled: async () => {
+      await utils.notifications.invalidate();
+    },
+  });
+
+  const markAllRead = api.notifications.markAllRead.useMutation({
+    onSuccess: () => {
+      showMessage("All notifications marked read", true);
+    },
+
+    onError: (err) => {
+      showMessage(getFriendlyError(err), false);
+    },
+
+    onSettled: async () => {
+      await utils.notifications.invalidate();
+    },
+  });
+
+  if (isLoading) return <LoadingScreen />;
+
+  if (error || !notifications) return <ServerError />;
 
   return (
     <div>
@@ -16,22 +50,21 @@ export default function NotificationsPage() {
           Every event across proposals, contracts, payments, threads and status.
         </span>
         <button
-          className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 text-[12.5px] no-underline hover:underline"
-          onClick={() => markAllRead()}
+          className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 text-[12.5px] no-underline hover:underline disabled:cursor-not-allowed disabled:opacity-45"
+          disabled={markAllRead.isPending}
+          onClick={() => markAllRead.mutate()}
         >
           Mark all read
         </button>
       </div>
       <div>
-        {notifs.map((n) => (
+        {notifications.map((n) => (
           <div
             key={n.id}
             className="hover:bg-text/5 border-divider flex cursor-pointer items-start gap-[13px] border-b p-[15px_6px]"
             onClick={() => {
-              markRead(n.id);
-              go(
-                n.audience === "client" ? `/projects/${n.projectId}` : n.route,
-              );
+              if (!n.read) markRead.mutate({ id: n.id });
+              router.push(n.route);
             }}
           >
             <div
@@ -40,14 +73,20 @@ export default function NotificationsPage() {
             <div className="min-w-0 flex-1">
               <div className="text-[13.5px] leading-[1.5]">{n.title}</div>
               <div className="text-text/42 mt-[3px] text-[11px]">
-                {project(n.projectId)?.title ?? "—"} · {ago(n.ts)}
+                {ago(new Date(n.createdAt).getTime())}
               </div>
             </div>
             <Tag status="done" className="text-[9.5px]">
-              {n.audience === "client" ? "Client saw this" : "You"}
+              {n.audience === "CLIENT" ? "Client saw this" : "You"}
             </Tag>
           </div>
         ))}
+        {notifications.length === 0 ? (
+          <div className="text-text/45 p-[22px_6px] text-[13px]">
+            Nothing yet. Events land here as proposals, contracts and messages
+            move.
+          </div>
+        ) : null}
       </div>
     </div>
   );

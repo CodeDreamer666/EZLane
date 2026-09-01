@@ -11,7 +11,6 @@ import {
     IconProposals,
     IconSearch,
 } from "~/components/shared";
-import useEzlane from "~/hook/useEzlane";
 import { authClient } from "~/server/better-auth/client";
 import { api } from "~/trpc/react";
 import Avatar from "./Avatar";
@@ -33,13 +32,21 @@ const SETTINGS_ITEMS = [
     { href: "/settings/account", label: "Account", pro: false },
 ] as const;
 
-export default function Sidebar() {
+export default function Sidebar({
+    navOpen,
+    closeNav,
+    openPalette,
+}: {
+    navOpen: boolean;
+    closeNav: () => void;
+    openPalette: () => void;
+}) {
     const pathname = usePathname();
-    const { state, openPalette, closeNav } = useEzlane();
 
     const { data: session } = authClient.useSession();
     const { data: planData } = api.settings.getPlan.useQuery();
     const { data: projects } = api.projects.list.useQuery();
+    const { data: unreadCount } = api.notifications.unreadCount.useQuery();
 
     const isPro = planData?.plan === "PRO";
     const name = session?.user.name ?? "";
@@ -47,10 +54,6 @@ export default function Sidebar() {
     const image = session?.user.image ?? null;
 
     const activeCount = (projects ?? []).filter((p) => !p.completed).length;
-
-    const unreadCount = state.notifications.filter(
-        (n) => n.audience === "freelancer" && !n.read,
-    ).length;
 
     const usageShort = isPro
         ? "unlimited"
@@ -65,7 +68,7 @@ export default function Sidebar() {
     return (
         <aside
             className="border-divider [&::-webkit-scrollbar-thumb]:border-bg [&::-webkit-scrollbar-thumb]:bg-text/16 [&::-webkit-scrollbar-thumb:hover]:bg-text/28 [&::-webkit-scrollbar-track]:bg-bg [&::-webkit-scrollbar-corner]:bg-bg sticky top-0 flex h-screen w-[238px] flex-none [scrollbar-width:thin] [scrollbar-color:rgba(242,245,248,0.16)_#0a0b0e] flex-col gap-[16px] overflow-y-auto overscroll-contain border-r bg-[#080910] p-[18px_14px_20px] max-lg:fixed max-lg:top-0 max-lg:-left-[282px] max-lg:z-45 max-lg:w-[274px]! max-lg:overflow-y-auto max-lg:px-3.5! max-lg:pt-4! max-lg:pb-[26px]! max-lg:data-[open=1]:left-0 max-lg:data-[open=1]:shadow-lg lg:self-start [&::-webkit-scrollbar]:h-[8px] [&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-2"
-            data-open={state.navOpen ? "1" : "0"}
+            data-open={navOpen ? "1" : "0"}
         >
             <div className="flex items-center gap-[9px] p-[0_4px]">
                 <div className="border-accent grid h-[20px] w-[20px] place-items-center rounded-[3px] border">
@@ -109,7 +112,7 @@ export default function Sidebar() {
                 >
                     <IconBell />
                     <span className="flex-1">Notifications</span>
-                    {unreadCount > 0 ? (
+                    {unreadCount ? (
                         <span
                             className="data-[s=sent]:bg-accent-100 data-[s=sent]:text-accent-800 data-[s=commented]:text-accent-700 data-[s=accepted]:bg-text data-[s=accepted]:text-bg data-[s=done]:text-text/60 data-[s=warn]:text-accent-700 inline-flex items-center rounded-[3px] px-[7px] py-[1px] text-[10px] tracking-[0.02em] whitespace-nowrap data-[s=commented]:bg-transparent data-[s=commented]:shadow-[inset_0_0_0_1px_var(--color-accent)] data-[s=done]:bg-transparent data-[s=done]:shadow-[inset_0_0_0_1px_var(--color-divider)] data-[s=draft]:bg-neutral-200 data-[s=draft]:text-neutral-800 data-[s=warn]:bg-transparent data-[s=warn]:shadow-[inset_0_0_0_1px_var(--color-accent-400)]"
                             data-s="sent"

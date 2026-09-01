@@ -36,30 +36,52 @@ enum ProjectStatus {
   APPROVED
 }
 
+enum NotificationAudience {
+  FREELANCER
+  CLIENT
+}
+
 model User {
-  id                 String     @id
+  id                 String         @id
   name               String //@db.Text
   email              String
-  emailVerified      Boolean    @default(false)
+  emailVerified      Boolean        @default(false)
   image              String? //@db.Text
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @default(now()) @updatedAt
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @default(now()) @updatedAt
   sessions           Session[]
   accounts           Account[]
-  plan               Plan       @default(FREE)
+  plan               Plan           @default(FREE)
   invoiceDisplayName String?
   invoiceContact     String?
   invoicePrefix      String?
   accentColour       String?
   logo               String?
   welcomeMessage     String?
-  hideBranding       Boolean    @default(false)
+  hideBranding       Boolean        @default(false)
   clients            Client[]
   proposals          Proposal[]
   projects           Project[]
+  notifications      Notification[]
 
   @@unique([email])
   @@map("user")
+}
+
+model Notification {
+  id         String               @id @default(cuid())
+  userId     String
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audience   NotificationAudience
+  title      String
+  route      String
+  projectId  String?
+  proposalId String?
+  read       Boolean              @default(false)
+  createdAt  DateTime             @default(now())
+
+  @@index([userId, createdAt])
+  @@map("notification")
 }
 
 model Client {
@@ -87,7 +109,6 @@ model ClientPortal {
   urlToken1    String   @unique
   urlToken2    String
   passwordHash String
-  customSlug   String?  @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now()) @updatedAt
 

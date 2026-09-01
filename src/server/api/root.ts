@@ -1,6 +1,7 @@
 import { accountRouter } from "~/server/api/routers/account";
 import { clientRouter } from "~/server/api/routers/client";
 import { clientPortalRouter } from "~/server/api/routers/clientPortal";
+import { notificationRouter } from "~/server/api/routers/notification";
 import { portalRouter } from "~/server/api/routers/portal";
 import { projectRouter } from "~/server/api/routers/project";
 import { proposalRouter } from "~/server/api/routers/proposal";
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
     account: accountRouter,
     clients: clientRouter,
     clientPortal: clientPortalRouter,
+    notifications: notificationRouter,
     portal: portalRouter,
     proposals: proposalRouter,
     projects: projectRouter,

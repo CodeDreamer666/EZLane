@@ -1,37 +1,70 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SectionHead from "~/components/dashboard/SectionHead";
 import StatTile from "~/components/dashboard/StatTile";
 
-import { Button } from "~/components/shared";
+import { Button, LoadingScreen, ServerError } from "~/components/shared";
 import ProjectCard from "~/components/ProjectCard";
 import useAddClientModal from "~/hook/useAddClientModal";
-import { ago, money } from "~/lib/format";
-import useEzlane from "~/hook/useEzlane";
+import { ago, money, projectStatusLabel } from "~/lib/format";
+import getFriendlyError from "~/lib/getFriendlyError";
+import useStatusMessage from "~/hook/useStatusMessage";
+import { api } from "~/trpc/react";
+
+const AWAITING_CLIENT_STATUSES = ["SENT", "CLIENT_COMMENTED", "REVISED"];
+
+function payLabel(depositPaid: boolean, finalPaid: boolean): string {
+  if (depositPaid && finalPaid) return "Paid in full";
+  if (depositPaid) return "Deposit in";
+  return "Unpaid";
+}
 
 export default function DashboardPage() {
-  const { state, activeProjects, limit, markRead, go } = useEzlane();
+  const router = useRouter();
   const { openModal } = useAddClientModal();
+  const { showMessage } = useStatusMessage();
+  const utils = api.useUtils();
 
-  const active = activeProjects();
-  const lim = limit();
-  const overLimit = active.length > lim;
-  const usageNote =
-    state.plan === "pro"
-      ? "Unlimited active projects"
-      : `${active.length} of ${lim} active projects used`;
-  const awaitingCount = state.proposals.filter(
-    (p) => p.status === "Sent" || p.status === "Client Commented",
+  const { data: projects, isLoading, error } = api.projects.list.useQuery();
+  const { data: proposals } = api.proposals.list.useQuery();
+  const { data: plan } = api.settings.getPlan.useQuery();
+  const { data: notifications } = api.notifications.list.useQuery();
+
+  const markRead = api.notifications.markRead.useMutation({
+    onError: (err) => {
+      showMessage(getFriendlyError(err), false);
+    },
+
+    onSettled: async () => {
+      await utils.notifications.invalidate();
+    },
+  });
+
+  if (isLoading) return <LoadingScreen />;
+
+  if (error || !projects) return <ServerError />;
+
+  const isPro = plan?.plan === "PRO";
+  const limit = isPro ? Infinity : 2;
+  const active = projects.filter((p) => !p.completed);
+  const overLimit = active.length > limit;
+  const usageNote = isPro
+    ? "Unlimited active projects"
+    : `${active.length} of ${limit} active projects used`;
+  const awaitingCount = (proposals ?? []).filter((p) =>
+    AWAITING_CLIENT_STATUSES.includes(p.status),
   ).length;
-  const unpaid = state.projects
-    .filter((p) => !p.completed)
-    .reduce(
-      (n, p) => n + (p.deposit ? 0 : p.price / 2) + (p.final ? 0 : p.price / 2),
-      0,
-    );
-  const recentNotifs = state.notifications
-    .filter((n) => n.audience === "freelancer")
+  const unpaid = active.reduce(
+    (total, p) =>
+      total +
+      (p.depositPaid ? 0 : p.proposal.price / 2) +
+      (p.finalPaid ? 0 : p.proposal.price / 2),
+    0,
+  );
+  const recentNotifs = (notifications ?? [])
+    .filter((n) => n.audience === "FREELANCER")
     .slice(0, 5);
 
   return (
@@ -47,7 +80,7 @@ export default function DashboardPage() {
               Upgrade to Pro, or mark a project completed to free a slot.
             </div>
           </div>
-          <Button variant="primary" onClick={() => go("/plans")}>
+          <Button variant="primary" onClick={() => router.push("/plans")}>
             See plans
           </Button>
         </div>
@@ -76,29 +109,20 @@ export default function DashboardPage() {
           />
           {active.length > 0 ? (
             <div className="flex flex-col gap-[12px]">
-              {active.map((p, i) => {
-                const c = state.clients.find((x) => x.id === p.clientId);
-                return (
-                  <ProjectCard
-                    key={p.id}
-                    href={`/projects/${p.id}`}
-                    clientLabel={c ? c.company || c.name : ""}
-                    title={p.title}
-                    statusLabel={p.completed ? "Completed" : p.status}
-                    progress={p.progress}
-                    price={p.price}
-                    due={p.due}
-                    payLabel={
-                      p.deposit && p.final
-                        ? "Paid in full"
-                        : p.deposit
-                          ? "Deposit in"
-                          : "Unpaid"
-                    }
-                    blocked={i >= lim}
-                  />
-                );
-              })}
+              {active.map((p, i) => (
+                <ProjectCard
+                  key={p.id}
+                  href={`/projects/${p.id}`}
+                  clientLabel={p.client.company ?? p.client.name}
+                  title={p.proposal.title}
+                  statusLabel={projectStatusLabel(p.status)}
+                  progress={p.progress}
+                  price={p.proposal.price}
+                  due={p.proposal.due}
+                  payLabel={payLabel(p.depositPaid, p.finalPaid)}
+                  blocked={i >= limit}
+                />
+              ))}
             </div>
           ) : (
             <div className="border-divider rounded-[5px] border border-dashed p-[34px] text-center">
@@ -128,8 +152,8 @@ export default function DashboardPage() {
                   key={n.id}
                   className="hover:bg-text/5 border-divider flex cursor-pointer items-start gap-[9px] border-b p-[9px_6px]"
                   onClick={() => {
-                    markRead(n.id);
-                    go(n.route);
+                    if (!n.read) markRead.mutate({ id: n.id });
+                    router.push(n.route);
                   }}
                 >
                   <div
@@ -140,11 +164,16 @@ export default function DashboardPage() {
                       {n.title}
                     </div>
                     <div className="text-text/42 mt-[2px] text-[10.5px]">
-                      {ago(n.ts)}
+                      {ago(new Date(n.createdAt).getTime())}
                     </div>
                   </div>
                 </div>
               ))}
+              {recentNotifs.length === 0 ? (
+                <div className="text-text/42 p-[9px_6px] text-[12px]">
+                  Nothing yet.
+                </div>
+              ) : null}
             </div>
           </div>
           <div className="border-divider rounded-[5px] border p-[14px]">

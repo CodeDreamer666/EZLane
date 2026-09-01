@@ -1,11 +1,12 @@
 "use client";
 
-import type { MouseEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useState, type MouseEvent } from "react";
 
 import { Input, Kbd } from "~/components/shared";
 import useAddClientModal from "~/hook/useAddClientModal";
-import { companyOrName } from "~/lib/format";
-import useEzlane from "~/hook/useEzlane";
+import { proposalStatusLabel } from "~/lib/format";
+import { api } from "~/trpc/react";
 
 interface Command {
     group: string;
@@ -35,37 +36,57 @@ const GO_COMMANDS = [
     { group: "Go", label: "Settings — Account", route: "/settings/account" },
 ] as const;
 
-export default function CommandPalette() {
-    const { state, closePalette, setPaletteQuery, go, client } = useEzlane();
+export default function CommandPalette({
+    open,
+    onClose,
+}: {
+    open: boolean;
+    onClose: () => void;
+}) {
+    const router = useRouter();
     const { openModal } = useAddClientModal();
 
-    if (!state.paletteOpen) return null;
+    const { data: projects } = api.projects.list.useQuery(undefined, {
+        enabled: open,
+    });
+    const { data: proposals } = api.proposals.list.useQuery(undefined, {
+        enabled: open,
+    });
 
-    const q = state.paletteQuery.toLowerCase();
+    const [query, setQuery] = useState("");
+
+    if (!open) return null;
+
+    const go = (route: string) => {
+        onClose();
+        router.push(route);
+    };
+
+    const q = query.toLowerCase();
 
     const commands: Command[] = [];
     commands.push({
         group: "Action",
         label: "Add a client",
         run: () => {
-            closePalette();
+            onClose();
             openModal();
         },
     });
     for (const c of GO_COMMANDS) {
         commands.push({ group: c.group, label: c.label, run: () => go(c.route) });
     }
-    for (const p of state.projects.filter((x) => x.stage !== "proposal")) {
+    for (const p of projects ?? []) {
         commands.push({
             group: "Project",
-            label: `${companyOrName(client(p.clientId))} — ${p.title}`,
+            label: `${p.client.company ?? p.client.name} — ${p.proposal.title}`,
             run: () => go(`/projects/${p.id}`),
         });
     }
-    for (const p of state.proposals) {
+    for (const p of proposals ?? []) {
         commands.push({
             group: "Proposal",
-            label: `${client(p.clientId).name} — ${p.title} (${p.status})`,
+            label: `${p.client.name} — ${p.title} (${proposalStatusLabel(p.status)})`,
             run: () => go(`/proposals/${p.id}`),
         });
     }
@@ -82,7 +103,7 @@ export default function CommandPalette() {
     return (
         <div
             className="fixed inset-0 z-[60] grid place-items-center items-start bg-neutral-900/50 p-4 pt-[14vh]"
-            onClick={closePalette}
+            onClick={onClose}
         >
             <div
                 className="border-divider bg-surface flex w-[min(520px,_100%)] animate-[fadeUp_.14s_ease-out] flex-col gap-0 rounded-lg border p-0 shadow-lg max-sm:max-h-[88vh] max-sm:w-[calc(100vw-26px)] max-sm:overflow-y-auto"
@@ -91,8 +112,8 @@ export default function CommandPalette() {
                 <Input
                     placeholder="Jump to a screen or run a command…"
                     className="border-divider min-h-[48px] rounded-none border-0 border-b text-[15px]"
-                    value={state.paletteQuery}
-                    onChange={(e) => setPaletteQuery(e.target.value)}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
                     autoFocus
                 />
                 <div className="max-h-[320px] overflow-auto p-[6px]">

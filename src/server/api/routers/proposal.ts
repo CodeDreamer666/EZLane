@@ -7,6 +7,7 @@ import {
     proposalUpdateZodSchema,
 } from "~/schema/proposal";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import notify from "~/lib/notify";
 import sanitize from "~/lib/sanitize";
 import sanitizeRichText from "~/lib/sanitizeRichText";
 
@@ -19,6 +20,7 @@ const sendReadinessSelect = {
     due: true,
     deliverables: true,
     body: true,
+    client: { select: { name: true } },
 } as const;
 
 const proposalSelect = {
@@ -255,12 +257,23 @@ export const proposalRouter = createTRPCRouter({
                     throw new TRPCError({ code: "BAD_REQUEST", message: issue });
 
                 const now = new Date();
+                const wasOut = existing.status !== "DRAFT";
 
-                return await ctx.db.proposal.update({
+                const updated = await ctx.db.proposal.update({
                     where: { id: input.id },
                     data: { status: "SENT", sentAt: now, lastSavedAt: now },
                     select: proposalSelect,
                 });
+
+                await notify(ctx.db, {
+                    userId: ctx.session.user.id,
+                    audience: "FREELANCER",
+                    title: `${wasOut ? "Revised proposal" : "Proposal"} sent to ${existing.client.name} — “${existing.title}”`,
+                    route: `/proposals/${input.id}`,
+                    proposalId: input.id,
+                });
+
+                return updated;
             } catch (err) {
                 if (err instanceof TRPCError) throw err;
 
