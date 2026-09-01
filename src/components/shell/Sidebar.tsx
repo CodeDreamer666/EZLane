@@ -58,16 +58,18 @@ export default function Sidebar({
     const usageShort = isPro
         ? "unlimited"
         : `${activeCount} / ${FREE_ACTIVE_PROJECT_LIMIT}`;
+
     const usageBar = isPro
         ? "100%"
         : `${Math.min(100, (activeCount / FREE_ACTIVE_PROJECT_LIMIT) * 100)}%`;
+        
     const usageNote = isPro
         ? "Unlimited active projects"
         : `${activeCount} of ${FREE_ACTIVE_PROJECT_LIMIT} active projects used`;
 
     return (
         <aside
-            className="border-divider [&::-webkit-scrollbar-thumb]:border-bg [&::-webkit-scrollbar-thumb]:bg-text/16 [&::-webkit-scrollbar-thumb:hover]:bg-text/28 [&::-webkit-scrollbar-track]:bg-bg [&::-webkit-scrollbar-corner]:bg-bg sticky top-0 flex h-screen w-[238px] flex-none [scrollbar-width:thin] [scrollbar-color:rgba(242,245,248,0.16)_#0a0b0e] flex-col gap-[16px] overflow-y-auto overscroll-contain border-r bg-[#080910] p-[18px_14px_20px] max-lg:fixed max-lg:top-0 max-lg:-left-[282px] max-lg:z-45 max-lg:w-[274px]! max-lg:overflow-y-auto max-lg:px-3.5! max-lg:pt-4! max-lg:pb-[26px]! max-lg:data-[open=1]:left-0 max-lg:data-[open=1]:shadow-lg lg:self-start [&::-webkit-scrollbar]:h-[8px] [&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-2"
+            className="border-divider [&::-webkit-scrollbar-thumb]:border-bg [&::-webkit-scrollbar-thumb]:bg-text/16 [&::-webkit-scrollbar-thumb:hover]:bg-text/28 [&::-webkit-scrollbar-track]:bg-bg [&::-webkit-scrollbar-corner]:bg-bg sticky top-0 flex h-screen w-[238px] flex-none [scrollbar-width:thin] [scrollbar-color:rgba(242,245,248,0.16)_#0a0b0e] flex-col gap-[16px] overflow-y-auto overscroll-contain border-r bg-[#080910] p-[18px_14px_20px] max-lg:fixed max-lg:top-0 max-lg:-left-[282px] max-lg:z-45 max-lg:w-[274px]! max-lg:overflow-y-auto max-lg:px-3.5! max-lg:pt-4! max-lg:pb-[26px]! max-lg:transition-[left] max-lg:duration-300 max-lg:ease-in-out max-lg:motion-reduce:transition-none max-lg:data-[open=1]:left-0 max-lg:data-[open=1]:shadow-lg lg:self-start [&::-webkit-scrollbar]:h-[8px] [&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-2"
             data-open={navOpen ? "1" : "0"}
         >
             <div className="flex items-center gap-[9px] p-[0_4px]">

@@ -1,5 +1,5 @@
 import "~/styles/globals.css";
-import { type Metadata } from "next";
+import { type Metadata, type Viewport } from "next";
 import { Cormorant_Garamond, Geist, Lora } from "next/font/google";
 import MessageCenter from "~/components/shell/MessageCenter";
 import AddClientModalProvider from "~/components/provider/AddClientModal";
@@ -9,7 +9,10 @@ import { TRPCReactProvider } from "~/trpc/react";
 export const metadata: Metadata = {
     title: "EZLane",
     description: "Clients, proposals and projects — one flow.",
-    icons: [{ rel: "icon", url: "/favicon.ico" }],
+};
+
+export const viewport: Viewport = {
+    themeColor: "#5b93ff",
 };
 
 const geist = Geist({
@@ -40,7 +43,9 @@ export default function RootLayout({
             <body className="bg-bg font-body text-text selection:bg-accent/30 m-0 text-[15px] leading-[1.55] font-normal">
                 <StatusMessageProvider>
                     <TRPCReactProvider>
-                        <AddClientModalProvider>{children}</AddClientModalProvider>
+                        <AddClientModalProvider>
+                            {children}
+                        </AddClientModalProvider>
                     </TRPCReactProvider>
                     <MessageCenter />
                 </StatusMessageProvider>

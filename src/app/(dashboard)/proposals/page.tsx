@@ -73,17 +73,22 @@ export default function ProposalsPage() {
 
     if (proposals.length === 0) {
         return (
-            <div className="border-divider rounded-[5px] border border-dashed p-[56px] text-center">
-                <div className="font-heading text-[22px]">
-                    Create your first proposal
+            <div className="flex min-h-[60vh] items-center justify-center">
+                <div className="border-divider w-full max-w-[440px] rounded-[5px] border p-[28px]">
+                    <div className="font-heading text-[22px]">
+                        Create your first proposal
+                    </div>
+                    <p className="text-text/55 mt-[8px] text-[13.5px]">
+                        Price, due date and deliverables sit at the top; the pitch
+                        goes underneath. Accepted terms become the project and the
+                        contract.
+                    </p>
+                    <div className="mt-[16px] flex justify-end">
+                        <Button variant="primary" onClick={openModal}>
+                            + Add a client to start
+                        </Button>
+                    </div>
                 </div>
-                <p className="text-text/55 m-[8px_auto_16px] max-w-[380px] text-[13.5px]">
-                    Price, due date and deliverables sit at the top; the pitch goes
-                    underneath. Accepted terms become the project and the contract.
-                </p>
-                <Button variant="primary" onClick={openModal}>
-                    + Add a client to start
-                </Button>
             </div>
         );
     }

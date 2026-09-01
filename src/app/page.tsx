@@ -1,18 +1,14 @@
 "use client";
 import { Suspense, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import Arrow from "~/components/landing/Arrow";
 import GoogleCta from "~/components/landing/GoogleCta";
+import { LoadingScreen } from "~/components/shared";
 import useStatusMessage from "~/hook/useStatusMessage";
 
-const cta =
-    "font-heading text-accent-700 hover:text-accent-800 inline-flex items-center gap-[9px] rounded-md border border-accent bg-accent/10 px-[22px] py-3 text-[15px] font-semibold transition duration-200 hover:-translate-y-px hover:bg-accent/20";
-const section =
-    "border-divider border-t px-[34px] py-[74px] max-[820px]:px-5 max-[820px]:py-[54px]";
-const h2 =
-    "font-heading m-0 text-[clamp(26px,3.4vw,38px)] leading-[1.15] font-semibold";
+const section ="border-divider border-t px-[34px] py-[74px] max-[820px]:px-5 max-[820px]:py-[54px]";
+const h2 ="font-heading m-0 text-[clamp(26px,3.4vw,38px)] leading-[1.15] font-semibold";
 const kick = "text-accent text-[10px] tracking-[.14em] uppercase tabular-nums";
+
 const faqs = [
     [
         "Does my client need an account?",
@@ -102,18 +98,25 @@ const workflowSteps = [
 function HomeContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+
     const { showMessage } = useStatusMessage();
 
     const error = searchParams.get("error");
     const authNoticeShown = useRef(false);
 
-    // Reads a `?error=` code left behind by a redirect (e.g. the dashboard guard),
-    // shows it in the top-level banner, then strips it from the URL so a refresh
-    // doesn't repeat it.
+    const scrollToHow = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+
+        document.getElementById("how")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
     useEffect(() => {
         if (!error || authNoticeShown.current) return;
+
         authNoticeShown.current = true;
+
         showMessage(AUTH_MESSAGES[error] ?? "Please log in to continue.", false);
+
         router.replace("/");
     }, [error, router, showMessage]);
 
@@ -121,51 +124,53 @@ function HomeContent() {
         <div className="font-body overflow-x-hidden">
             <header className="border-divider bg-bg/90 sticky top-0 z-20 flex items-center gap-5 border-b px-[34px] py-3.5 backdrop-blur-[8px]">
                 <div className="flex flex-1 items-center gap-[9px]">
-                    <div className="border-accent grid size-5 place-items-center rounded-[3px] border">
-                        <div className="bg-accent size-[7px]" />
-                    </div>
+                    <svg
+                        viewBox="0 0 32 32"
+                        className="size-5"
+                        fill="none"
+                        aria-hidden="true"
+                    >
+                        <rect width="32" height="32" rx="7" className="fill-accent" />
+                        <path
+                            d="M8 10.5H24L9 21.5H26"
+                            className="stroke-text"
+                            strokeWidth="3.6"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    </svg>
                     <div className="font-heading text-[19px] font-semibold">EZLane</div>
                 </div>
-                <nav className="flex gap-[22px] text-[13.5px] max-[820px]:hidden">
-                    <a href="#how" className="text-text/60 hover:text-accent-700">
-                        How it works
-                    </a>
-                    <a href="#pricing" className="text-text/60 hover:text-accent-700">
-                        Pricing
-                    </a>
-                    <a href="#faq" className="text-text/60 hover:text-accent-700">
-                        FAQ
-                    </a>
-                </nav>
-                <GoogleCta className={`${cta} px-4 py-[9px] text-[13.5px]`}>
-                    Open EZLane
-                </GoogleCta>
+                <GoogleCta wantArrow={false} />
             </header>
 
             <section className="px-[34px] pt-16 pb-[74px] max-[820px]:px-5 max-[820px]:py-[54px]">
                 <div className="mx-auto grid max-w-[1080px] grid-cols-[minmax(0,_1fr)_minmax(0,_1.05fr)] items-center gap-14 max-[820px]:grid-cols-1 max-[820px]:gap-[30px]">
                     <div>
                         <div className={kick}>For freelancers</div>
+
                         <h1 className="font-heading mt-3.5 text-[clamp(36px,5vw,58px)] leading-[1.08] font-semibold text-pretty">
                             Send the proposal. Get paid. Skip the mess.
                         </h1>
+
                         <p className="text-text/66 mt-[18px] max-w-[44ch] text-[17px] leading-[1.65]">
                             EZLane turns one proposal into a contract, a client portal and a
                             payment plan. No spreadsheets, no lost email threads.
                         </p>
+
                         <div className="mt-[30px] flex flex-wrap gap-3">
-                            <GoogleCta className={cta}>
-                                Open EZLane
-                                <Arrow />
-                            </GoogleCta>
+                            <GoogleCta />
                             <a
                                 href="#how"
+                                onClick={scrollToHow}
                                 className="font-heading text-text/78 hover:text-text border-divider hover:bg-text/7 flex items-center justify-center rounded-md border px-[18px] py-[11px] text-center text-[14px] font-semibold"
                             >
                                 <span>See how it works</span>
                             </a>
                         </div>
+
                     </div>
+
                     <div className="border-divider overflow-hidden rounded-lg border bg-[#0d0f14] shadow-lg">
                         <div className="border-divider flex items-center gap-1.5 border-b bg-[#080910] px-3 py-[9px]">
                             {[0, 1, 2].map((n) => (
@@ -175,6 +180,7 @@ function HomeContent() {
                                 EZLane — Dashboard
                             </span>
                         </div>
+
                         <div className="bg-divider grid grid-cols-3 gap-px">
                             {[
                                 ["Active work", "3"],
@@ -189,6 +195,7 @@ function HomeContent() {
                                 </div>
                             ))}
                         </div>
+
                         {[
                             [
                                 "Ferrous & Co.",
@@ -229,6 +236,7 @@ function HomeContent() {
                                 </span>
                             </div>
                         ))}
+
                     </div>
                 </div>
             </section>
@@ -238,6 +246,7 @@ function HomeContent() {
                     <h2 className="font-heading m-0 text-[clamp(26px,3.4vw,38px)] leading-[1.15] font-semibold">
                         Everything about one job, in one place.
                     </h2>
+
                     <div className="border-divider bg-divider mt-[34px] grid grid-cols-3 gap-px overflow-hidden rounded-md border max-[820px]:grid-cols-1">
                         <article className="bg-bg px-6 py-[26px]">
                             <svg
@@ -340,6 +349,7 @@ function HomeContent() {
                                 opens or comments on it.
                             </p>
                         </article>
+
                         <article className="bg-bg px-6 py-[26px]">
                             <svg
                                 viewBox="0 0 300 96"
@@ -431,6 +441,7 @@ function HomeContent() {
                                 dates already filled in.
                             </p>
                         </article>
+
                         <article className="bg-bg px-6 py-[26px]">
                             <svg viewBox="0 0 300 96" className="font-body block h-auto w-full">
                                 <text
@@ -508,12 +519,13 @@ function HomeContent() {
 
             <section
                 id="how"
-                className="border-divider border-t px-[34px] py-[74px] max-[820px]:px-5 max-[820px]:py-[54px]"
+                className="border-divider scroll-mt-[70px] border-t px-[34px] py-[74px] max-[820px]:px-5 max-[820px]:py-[54px]"
             >
                 <div className="mx-auto max-w-[1080px]">
                     <h2 className="font-heading m-0 text-[clamp(26px,3.4vw,38px)] leading-[1.15] font-semibold">
                         Three steps from first email to final payment.
                     </h2>
+
                     <div className="mt-9 grid grid-cols-3 items-stretch gap-[26px] max-[820px]:grid-cols-1">
                         {workflowSteps.map((step) => (
                             <article key={step.n} className="flex flex-col">
@@ -620,6 +632,7 @@ function HomeContent() {
                         Every feature is on Free. Pro lifts the project ceiling and makes the
                         portal entirely yours.
                     </p>
+
                     <div className="mt-[34px] grid grid-cols-2 gap-[18px] max-[820px]:grid-cols-1">
                         <article className="border-divider flex min-h-[307px] flex-col gap-3.5 rounded-md border px-[26px] py-6">
                             <div>
@@ -637,13 +650,17 @@ function HomeContent() {
                                 <li>50 / 50 payment tracking</li>
                                 <li>Client portal, password-protected</li>
                             </ul>
-                            <Link
-                                href="/dashboard"
-                                className="font-heading border-divider text-text/78 hover:bg-text/7 mt-auto rounded-md border px-[18px] py-[11px] text-center text-sm font-semibold"
-                            >
-                                Start free
-                            </Link>
+                            <div className="mt-auto">
+                                <GoogleCta
+                                    wantArrow={false}
+                                    callbackURL="/plans"
+                                    label="Start free"
+                                    variant="secondary"
+                                    fullWidth
+                                />
+                            </div>
                         </article>
+
                         <article className="border-accent bg-accent/6 flex min-h-[307px] flex-col gap-3.5 rounded-md border px-[26px] py-6">
                             <div>
                                 <div className="text-accent text-[10px] tracking-[.14em] uppercase">
@@ -665,12 +682,14 @@ function HomeContent() {
                                 <li>Your logo and colour on the portal</li>
                                 <li>Font control in the proposal editor</li>
                             </ul>
-                            <Link
-                                href="/plans"
-                                className="font-heading border-accent bg-accent/10 text-accent-700 hover:bg-accent/20 mt-auto rounded-md border px-[22px] py-3 text-center text-[15px] font-semibold"
-                            >
-                                Go Pro
-                            </Link>
+                            <div className="mt-auto">
+                                <GoogleCta
+                                    wantArrow={false}
+                                    callbackURL="/plans"
+                                    label="Start Pro"
+                                    fullWidth
+                                />
+                            </div>
                         </article>
                     </div>
                 </div>
@@ -699,23 +718,34 @@ function HomeContent() {
                     </div>
                 </div>
             </section>
+            
             <section className={`${section} text-center`}>
                 <h2 className={h2}>Your next project can start clean.</h2>
                 <p className="text-text/62 mt-3 text-[15.5px]">
                     Set up a client and send a proposal in a few minutes.
                 </p>
                 <div className="mt-7">
-                    <GoogleCta className={cta}>
-                        Open EZLane
-                        <Arrow />
-                    </GoogleCta>
+                    <GoogleCta />
                 </div>
             </section>
+
             <footer className="border-divider text-text/45 flex flex-wrap items-center gap-4 border-t px-[34px] py-[26px] text-[12.5px]">
                 <div className="flex flex-1 items-center gap-2">
-                    <div className="border-accent grid size-[15px] place-items-center rounded-sm border">
-                        <div className="bg-accent size-[5px]" />
-                    </div>
+                    <svg
+                        viewBox="0 0 32 32"
+                        className="size-[15px]"
+                        fill="none"
+                        aria-hidden="true"
+                    >
+                        <rect width="32" height="32" rx="7" className="fill-accent" />
+                        <path
+                            d="M8 10.5H24L9 21.5H26"
+                            className="stroke-text"
+                            strokeWidth="3.6"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    </svg>
                     EZLane
                 </div>
                 <span>© 2026 EZLane</span>
@@ -726,7 +756,7 @@ function HomeContent() {
 
 export default function Home() {
     return (
-        <Suspense>
+        <Suspense fallback={<LoadingScreen />}>
             <HomeContent />
         </Suspense>
     );

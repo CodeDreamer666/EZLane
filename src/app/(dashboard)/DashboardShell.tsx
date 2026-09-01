@@ -19,10 +19,9 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
         };
 
         window.addEventListener("keydown", onKeyDown);
+
         return () => window.removeEventListener("keydown", onKeyDown);
     }, []);
-
-    const closeNav = () => setNavOpen(false);
 
     return (
         <>
@@ -30,17 +29,19 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
                 {navOpen ? (
                     <div
                         className="hidden max-lg:fixed max-lg:inset-0 max-lg:z-44 max-lg:block max-lg:bg-black/55"
-                        onClick={closeNav}
+                        onClick={() => setNavOpen(false)}
                     />
                 ) : null}
+
                 <Sidebar
                     navOpen={navOpen}
-                    closeNav={closeNav}
+                    closeNav={() => setNavOpen(false)}
                     openPalette={() => setPaletteOpen(true)}
                 />
 
                 <main className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
                     <Header toggleNav={() => setNavOpen((open) => !open)} />
+                        
                     <div className="max-w-[1180px] p-[28px_30px_70px] max-lg:px-[18px]! max-lg:pt-[22px]! max-lg:pb-20! max-sm:px-3.5! max-sm:pt-[18px]! max-sm:pb-[98px]!">
                         {children}
                     </div>

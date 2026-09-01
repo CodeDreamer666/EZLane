@@ -94,15 +94,19 @@ export default function ClientsPage() {
 
     if (clients.length === 0) {
         return (
-            <div className="border-divider rounded-[5px] border border-dashed p-[56px] text-center">
-                <div className="font-heading text-[22px]">No clients yet</div>
-                <p className="text-text/55 m-[8px_auto_16px] max-w-[360px] text-[13.5px]">
-                    Clients are added by hand — nothing is sent to them until you send a
-                    proposal.
-                </p>
-                <Button variant="primary" onClick={openModal}>
-                    + Add your first client
-                </Button>
+            <div className="flex min-h-[60vh] items-center justify-center">
+                <div className="border-divider w-full max-w-[440px] rounded-[5px] border p-[28px]">
+                    <div className="font-heading text-[22px]">No clients yet</div>
+                    <p className="text-text/55 mt-[8px] text-[13.5px]">
+                        Clients are added by hand — nothing is sent to them until
+                        you send a proposal.
+                    </p>
+                    <div className="mt-[16px] flex justify-end">
+                        <Button variant="primary" onClick={openModal}>
+                            + Add your first client
+                        </Button>
+                    </div>
+                </div>
             </div>
         );
     }
