@@ -1,11 +1,25 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { proposalUpdateZodSchema } from "~/schema/proposal";
+import { acceptProposalAndCreateProject } from "~/lib/acceptProposal";
+import {
+    DEFAULT_PROPOSAL_TITLE,
+    proposalSendIssue,
+    proposalUpdateZodSchema,
+} from "~/schema/proposal";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import sanitize from "~/lib/sanitize";
 import sanitizeRichText from "~/lib/sanitizeRichText";
 
 const clientSelect = { select: { name: true, company: true } } as const;
+
+const sendReadinessSelect = {
+    status: true,
+    title: true,
+    price: true,
+    due: true,
+    deliverables: true,
+    body: true,
+} as const;
 
 const proposalSelect = {
     id: true,
@@ -20,20 +34,11 @@ const proposalSelect = {
     fontSize: true,
     lastSavedAt: true,
     sentAt: true,
+    acceptedAt: true,
     updatedAt: true,
     client: clientSelect,
+    project: { select: { id: true } },
 } as const;
-
-function seededBody(clientLabel: string): string {
-    return `
-    <h2>Overview</h2>
-    <p>What the project is and why it matters to ${clientLabel}.</p>
-    <h2>Approach</h2>
-    <p>How you will work, in the order you will work.</p>
-    <h2>Terms</h2>
-    <p>50% deposit to start, 50% on completion.</p>
-    `;
-}
 
 export const proposalRouter = createTRPCRouter({
     list: protectedProcedure.query(async ({ ctx }) => {
@@ -100,7 +105,7 @@ export const proposalRouter = createTRPCRouter({
             try {
                 const client = await ctx.db.client.findFirst({
                     where: { id: input.clientId, userId: ctx.session.user.id },
-                    select: { name: true, company: true },
+                    select: { id: true },
                 });
 
                 if (!client)
@@ -113,8 +118,8 @@ export const proposalRouter = createTRPCRouter({
                     data: {
                         userId: ctx.session.user.id,
                         clientId: input.clientId,
-                        title: "Untitled project",
-                        body: seededBody(client.company ?? client.name),
+                        title: DEFAULT_PROPOSAL_TITLE,
+                        body: "",
                         deliverables: [],
                     },
                     select: { id: true },
@@ -156,16 +161,45 @@ export const proposalRouter = createTRPCRouter({
 
                 const cleanTitle = sanitize(input.title);
 
-                if (cleanTitle.length < 1 || cleanTitle.length > 200)
+                if (cleanTitle.length < 1 || cleanTitle.length > 120)
                     throw new TRPCError({
                         code: "BAD_REQUEST",
-                        message: "Project title must be between 1 and 200 characters",
+                        message: "Project title must be between 1 and 120 characters",
                     });
+
+                if (input.due !== "") {
+                    const today = new Date();
+                    
+                    const todayStr = `${today.getFullYear()}-${String(
+                        today.getMonth() + 1,
+                    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+                    if (input.due <= todayStr)
+                        throw new TRPCError({
+                            code: "BAD_REQUEST",
+                            message:
+                                "The estimated due date must be in the future",
+                        });
+                }
 
                 const cleanDeliverables = input.deliverables
                     .map((item) => sanitize(item))
                     .filter((item) => item.length > 0)
                     .slice(0, 50);
+
+                const seen = new Set<string>();
+
+                for (const item of cleanDeliverables) {
+                    const key = item.toLowerCase();
+
+                    if (seen.has(key))
+                        throw new TRPCError({
+                            code: "BAD_REQUEST",
+                            message: "Deliverables can't contain duplicates",
+                        });
+                    seen.add(key);
+
+                }
 
                 return await ctx.db.proposal.update({
                     where: { id: input.id },
@@ -181,6 +215,7 @@ export const proposalRouter = createTRPCRouter({
                     },
                     select: proposalSelect,
                 });
+                
             } catch (err) {
                 if (err instanceof TRPCError) throw err;
 
@@ -199,7 +234,7 @@ export const proposalRouter = createTRPCRouter({
             try {
                 const existing = await ctx.db.proposal.findFirst({
                     where: { id: input.id, userId: ctx.session.user.id },
-                    select: { status: true },
+                    select: sendReadinessSelect,
                 });
 
                 if (!existing)
@@ -213,6 +248,11 @@ export const proposalRouter = createTRPCRouter({
                         code: "FORBIDDEN",
                         message: "This proposal has been accepted and is locked.",
                     });
+
+                const issue = proposalSendIssue(existing);
+
+                if (issue)
+                    throw new TRPCError({ code: "BAD_REQUEST", message: issue });
 
                 const now = new Date();
 
@@ -229,6 +269,64 @@ export const proposalRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "We couldn't send this proposal. Please try again.",
+                });
+            }
+        }),
+
+    accept: protectedProcedure
+        .input(z.object({ id: z.string().min(1) }))
+        .mutation(async ({ ctx, input }) => {
+            try {
+                const project = await acceptProposalAndCreateProject(ctx.db, {
+                    proposalId: input.id,
+                    ownerUserId: ctx.session.user.id,
+                });
+
+                return { id: project.id };
+            } catch (err) {
+                if (err instanceof TRPCError) throw err;
+
+                console.error("[proposal.accept] unexpected error", err);
+
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "We couldn't accept this proposal. Please try again.",
+                });
+            }
+        }),
+
+    delete: protectedProcedure
+        .input(z.object({ ids: z.array(z.string().min(1)).min(1).max(100) }))
+        .mutation(async ({ ctx, input }) => {
+            try {
+                const accepted = await ctx.db.proposal.findFirst({
+                    where: {
+                        id: { in: input.ids },
+                        userId: ctx.session.user.id,
+                        status: "ACCEPTED",
+                    },
+                    select: { id: true },
+                });
+
+                if (accepted)
+                    throw new TRPCError({
+                        code: "FORBIDDEN",
+                        message: "Accepted proposals are locked and can't be deleted.",
+                    });
+
+                const result = await ctx.db.proposal.deleteMany({
+                    where: { id: { in: input.ids }, userId: ctx.session.user.id },
+                });
+
+                return { count: result.count };
+            } catch (err) {
+                if (err instanceof TRPCError) throw err;
+
+                console.error("[proposal.delete] unexpected error", err);
+
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "We couldn't delete those proposals. Please try again.",
                 });
             }
         }),

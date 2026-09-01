@@ -1,5 +1,6 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
+import ClientPortalSection from "~/components/clients/ClientPortalSection";
 import InfoRow from "~/components/clients/InfoRow";
 import {
     Button,
@@ -55,6 +56,7 @@ export default function ClientDetailPage() {
                     Proposals
                 </h6>
                 <div className="mt-[12px] flex flex-col gap-[10px]">
+                    
                     {clientProposals.map((p) => {
                         const label = proposalStatusLabel(p.status);
                         return (
@@ -78,7 +80,9 @@ export default function ClientDetailPage() {
                             </div>
                         );
                     })}
+                    
                 </div>
+
                 {clientProposals.length === 0 ? (
                     <div className="text-text/55 border-divider rounded-[5px] border border-dashed p-[26px] text-center text-[13px]">
                         No proposals yet for this client.{" "}
@@ -91,6 +95,8 @@ export default function ClientDetailPage() {
                         </button>
                     </div>
                 ) : null}
+
+                <ClientPortalSection clientId={client.id} clientName={client.name} />
             </div>
             <aside className="border-divider flex flex-col gap-[12px] rounded-[5px] border p-[15px]">
                 <InfoRow label="Email" value={client.email} />

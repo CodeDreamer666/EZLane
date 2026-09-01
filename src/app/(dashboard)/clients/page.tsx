@@ -1,7 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { type MouseEvent } from "react";
-import { Button, LoadingIcon, LoadingScreen, ServerError } from "~/components/shared";
+import { useState, type MouseEvent } from "react";
+import {
+    Button,
+    Dialog,
+    LoadingIcon,
+    LoadingScreen,
+    ServerError,
+} from "~/components/shared";
 import useAddClientModal from "~/hook/useAddClientModal";
 import getFriendlyError from "~/lib/getFriendlyError";
 import useStatusMessage from "~/hook/useStatusMessage";
@@ -11,7 +17,12 @@ export default function ClientsPage() {
     const router = useRouter();
     const { openModal } = useAddClientModal();
     const { showMessage } = useStatusMessage();
+    const utils = api.useUtils();
     const { data: clients, isLoading, error } = api.clients.list.useQuery();
+
+    const [managing, setManaging] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [confirmOpen, setConfirmOpen] = useState(false);
 
     const createProposal = api.proposals.create.useMutation({
         onSuccess: (proposal) => {
@@ -20,6 +31,26 @@ export default function ClientsPage() {
 
         onError: (err) => {
             showMessage(getFriendlyError(err), false);
+        },
+    });
+
+    const deleteClients = api.clients.delete.useMutation({
+        onSuccess: (result) => {
+            showMessage(
+                `${result.count} client${result.count === 1 ? "" : "s"} deleted`,
+                true,
+            );
+            setManaging(false);
+            setSelectedIds([]);
+            setConfirmOpen(false);
+        },
+
+        onError: (err) => {
+            showMessage(getFriendlyError(err), false);
+        },
+
+        onSettled: async () => {
+            await utils.invalidate();
         },
     });
 
@@ -32,6 +63,25 @@ export default function ClientsPage() {
         if (createProposal.isPending) return;
 
         createProposal.mutate({ clientId });
+    };
+
+    const toggleSelected = (clientId: string) => {
+        setSelectedIds(
+            selectedIds.includes(clientId)
+                ? selectedIds.filter((id) => id !== clientId)
+                : [...selectedIds, clientId],
+        );
+    };
+
+    const cancelManage = () => {
+        setManaging(false);
+        setSelectedIds([]);
+    };
+
+    const handleDelete = () => {
+        if (selectedIds.length === 0) return;
+
+        deleteClients.mutate({ ids: selectedIds });
     };
 
     const pendingClientId = createProposal.isPending
@@ -59,49 +109,100 @@ export default function ClientsPage() {
 
     return (
         <>
+            <div className="mb-3 flex items-center gap-2">
+                {managing ? (
+                    <>
+                        <span className="text-text/55 mr-auto text-[13px]">
+                            {selectedIds.length} selected
+                        </span>
+                        <Button
+                            variant="secondary"
+                            onClick={cancelManage}
+                            disabled={deleteClients.isPending}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={() => setConfirmOpen(true)}
+                            disabled={selectedIds.length === 0 || deleteClients.isPending}
+                        >
+                            Delete selected
+                        </Button>
+                    </>
+                ) : (
+                    <Button
+                        variant="secondary"
+                        className="ml-auto"
+                        onClick={() => setManaging(true)}
+                    >
+                        Manage
+                    </Button>
+                )}
+            </div>
+
             {/* Mobile: card list */}
             <div className="flex flex-col gap-3 md:hidden">
                 {clients.map((c) => (
                     <div
                         key={c.id}
                         className="border-divider bg-surface cursor-pointer rounded-[7px] border p-4"
-                        onClick={() => router.push(`/clients/${c.id}`)}
+                        onClick={() =>
+                            managing
+                                ? toggleSelected(c.id)
+                                : router.push(`/clients/${c.id}`)
+                        }
                     >
-                        <div className="font-heading text-[19px] font-semibold break-words">
-                            {c.name}
+                        <div className="flex items-start gap-3">
+                            {managing ? (
+                                <input
+                                    type="checkbox"
+                                    className="mt-1.5 size-4 flex-none"
+                                    checked={selectedIds.includes(c.id)}
+                                    readOnly
+                                />
+                            ) : null}
+
+                            <div className="min-w-0 flex-1">
+                                <div className="font-heading text-[19px] font-semibold break-words">
+                                    {c.name}
+                                </div>
+
+                                <dl className="mt-3 flex flex-col">
+                                    <div className="py-2.5">
+                                        <dt className="text-text/40 text-[9.5px] tracking-[.11em] uppercase">
+                                            Email
+                                        </dt>
+                                        <dd className="text-text/75 mt-1 text-[13.5px] break-all">
+                                            {c.email}
+                                        </dd>
+                                    </div>
+                                    <div className="border-divider border-t py-2.5">
+                                        <dt className="text-text/40 text-[9.5px] tracking-[.11em] uppercase">
+                                            Company
+                                        </dt>
+                                        <dd className="mt-1 text-[13.5px] break-words">
+                                            {c.company ?? "—"}
+                                        </dd>
+                                    </div>
+                                </dl>
+
+                                {managing ? null : (
+                                    <button
+                                        className="font-inherit border-divider text-accent mt-3 w-full cursor-pointer rounded-[5px] border bg-transparent px-3 py-2.5 text-[13px] disabled:cursor-not-allowed disabled:opacity-45"
+                                        disabled={createProposal.isPending}
+                                        onClick={(e) => handleNewProposal(e, c.id)}
+                                    >
+                                        {pendingClientId === c.id ? (
+                                            <span className="flex items-center justify-center gap-2">
+                                                <LoadingIcon />
+                                                Creating...
+                                            </span>
+                                        ) : "New proposal"}
+                                    </button>
+                                )}
+                            </div>
                         </div>
-
-                        <dl className="mt-3 flex flex-col">
-                            <div className="py-2.5">
-                                <dt className="text-text/40 text-[9.5px] tracking-[.11em] uppercase">
-                                    Email
-                                </dt>
-                                <dd className="text-text/75 mt-1 text-[13.5px] break-all">
-                                    {c.email}
-                                </dd>
-                            </div>
-                            <div className="border-divider border-t py-2.5">
-                                <dt className="text-text/40 text-[9.5px] tracking-[.11em] uppercase">
-                                    Company
-                                </dt>
-                                <dd className="mt-1 text-[13.5px] break-words">
-                                    {c.company ?? "—"}
-                                </dd>
-                            </div>
-                        </dl>
-
-                        <button
-                            className="font-inherit border-divider text-accent mt-3 w-full cursor-pointer rounded-[5px] border bg-transparent px-3 py-2.5 text-[13px] disabled:cursor-not-allowed disabled:opacity-45"
-                            disabled={createProposal.isPending}
-                            onClick={(e) => handleNewProposal(e, c.id)}
-                        >
-                            {pendingClientId === c.id ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <LoadingIcon />
-                                    Creating...
-                                </span>
-                            ) : "New proposal"}
-                        </button>
                     </div>
                 ))}
             </div>
@@ -110,6 +211,7 @@ export default function ClientsPage() {
             <table className="[&_th]:border-divider [&_th]:text-text/60 [&_td]:border-divider [&_tbody_tr]:hover:bg-text/4 hidden w-full border-collapse text-sm leading-[1.55] md:table [&_td]:border-b [&_td]:p-2 [&_th]:border-b [&_th]:p-2 [&_th]:text-left [&_th]:text-[11px] [&_th]:tracking-[.08em] [&_th]:uppercase">
                 <thead>
                     <tr>
+                        {managing ? <th className="w-8"></th> : null}
                         <th>Client</th>
                         <th>Email</th>
                         <th>Company</th>
@@ -121,26 +223,77 @@ export default function ClientsPage() {
                         <tr
                             key={c.id}
                             className="hover:bg-text/5 cursor-pointer"
-                            onClick={() => router.push(`/clients/${c.id}`)}
+                            onClick={() =>
+                                managing
+                                    ? toggleSelected(c.id)
+                                    : router.push(`/clients/${c.id}`)
+                            }
                         >
+                            {managing ? (
+                                <td className="w-8">
+                                    <input
+                                        type="checkbox"
+                                        className="size-4"
+                                        checked={selectedIds.includes(c.id)}
+                                        readOnly
+                                    />
+                                </td>
+                            ) : null}
                             <td className="font-heading text-[15px] font-semibold">
                                 {c.name}
                             </td>
                             <td className="text-text/62 text-[13px]">{c.email}</td>
                             <td className="text-[13px]">{c.company ?? "—"}</td>
                             <td className="w-[120px] text-right">
-                                <button
-                                    className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 text-[12.5px] no-underline hover:underline disabled:cursor-not-allowed disabled:opacity-45"
-                                    disabled={createProposal.isPending}
-                                    onClick={(e) => handleNewProposal(e, c.id)}
-                                >
-                                    New proposal
-                                </button>
+                                {managing ? null : (
+                                    <button
+                                        className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 text-[12.5px] no-underline hover:underline disabled:cursor-not-allowed disabled:opacity-45"
+                                        disabled={createProposal.isPending}
+                                        onClick={(e) => handleNewProposal(e, c.id)}
+                                    >
+                                        New proposal
+                                    </button>
+                                )}
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+
+            <Dialog
+                open={confirmOpen}
+                onClose={() => {
+                    if (!deleteClients.isPending) setConfirmOpen(false);
+                }}
+                title="Delete clients?"
+                actions={
+                    <>
+                        <Button
+                            variant="secondary"
+                            onClick={() => setConfirmOpen(false)}
+                            disabled={deleteClients.isPending}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={handleDelete}
+                            disabled={deleteClients.isPending}
+                        >
+                            {deleteClients.isPending ? (
+                                <div className="flex items-center gap-2">
+                                    <LoadingIcon />
+                                    Deleting...
+                                </div>
+                            ) : "Delete"}
+                        </Button>
+                    </>
+                }
+            >
+                Deleting {selectedIds.length} client
+                {selectedIds.length === 1 ? "" : "s"} also removes their proposals.
+                This cannot be undone.
+            </Dialog>
         </>
     );
 }

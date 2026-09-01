@@ -72,6 +72,18 @@ export function proposalStatusLabel(status: string): string {
     return PROPOSAL_STATUS_LABELS[status] ?? "Draft";
 }
 
+const PROJECT_STATUS_LABELS: Record<string, string> = {
+    NOT_STARTED: "Not started",
+    IN_PROGRESS: "In Progress",
+    DELIVERED: "Delivered",
+    AWAITING_REVIEW: "Awaiting Review",
+    APPROVED: "Approved",
+};
+
+export function projectStatusLabel(status: string): string {
+    return PROJECT_STATUS_LABELS[status] ?? "Not started";
+}
+
 export function contractText(
     project: Project,
     client: Client,

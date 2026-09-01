@@ -106,8 +106,33 @@ export const clientRouter = createTRPCRouter({
                 if (cleanNotes.length > 255) {
                     throw new TRPCError({
                         code: "BAD_REQUEST",
-                        message: "Notes must be at most 2000 characters",
+                        message: "Notes must be at most 255 characters",
                     });
+                }
+
+                const duplicates = await ctx.db.client.findMany({
+                    where: {
+                        OR: [{ email: cleanEmail }, { name: cleanName }],
+                    },
+                    select: { email: true, name: true },
+                });
+
+                if (duplicates.length > 0) {
+                    const emailTaken = duplicates.some(
+                        (c) => c.email === cleanEmail,
+                    );
+                    const nameTaken = duplicates.some(
+                        (c) => c.name === cleanName,
+                    );
+
+                    const message =
+                        emailTaken && nameTaken
+                            ? "A client with this name and email already exists"
+                            : emailTaken
+                              ? "A client with this email already exists"
+                              : "A client with this name already exists";
+
+                    throw new TRPCError({ code: "CONFLICT", message });
                 }
 
                 const client = await ctx.db.client.create({
@@ -136,6 +161,27 @@ export const clientRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
                     message: "We couldn't save this client. Please try again.",
+                });
+            }
+        }),
+
+    delete: protectedProcedure
+        .input(z.object({ ids: z.array(z.string().min(1)).min(1).max(100) }))
+        .mutation(async ({ ctx, input }) => {
+            try {
+                const result = await ctx.db.client.deleteMany({
+                    where: { id: { in: input.ids }, userId: ctx.session.user.id },
+                });
+
+                return { count: result.count };
+            } catch (err) {
+                if (err instanceof TRPCError) throw err;
+
+                console.error("[client.delete] unexpected error", err);
+
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "We couldn't delete those clients. Please try again.",
                 });
             }
         }),

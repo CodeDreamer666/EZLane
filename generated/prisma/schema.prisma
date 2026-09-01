@@ -28,6 +28,14 @@ enum ProposalStatus {
   ACCEPTED
 }
 
+enum ProjectStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  DELIVERED
+  AWAITING_REVIEW
+  APPROVED
+}
+
 model User {
   id                 String     @id
   name               String //@db.Text
@@ -48,49 +56,122 @@ model User {
   hideBranding       Boolean    @default(false)
   clients            Client[]
   proposals          Proposal[]
+  projects           Project[]
 
   @@unique([email])
   @@map("user")
 }
 
 model Client {
-  id        String     @id @default(cuid())
+  id        String        @id @default(cuid())
   userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String
-  email     String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String        @unique
+  email     String        @unique
   company   String?
   notes     String?
   proposals Proposal[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @default(now()) @updatedAt
+  projects  Project[]
+  portal    ClientPortal?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
 
   @@index([userId])
   @@map("client")
 }
 
+model ClientPortal {
+  id           String   @id @default(cuid())
+  clientId     String   @unique
+  client       Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  urlToken1    String   @unique
+  urlToken2    String
+  passwordHash String
+  customSlug   String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  @@map("client_portal")
+}
+
 model Proposal {
-  id           String         @id @default(cuid())
+  id           String            @id @default(cuid())
   userId       String
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   clientId     String
-  client       Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client       Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
   title        String
-  price        Int            @default(0)
-  due          String         @default("")
+  price        Int               @default(0)
+  due          String            @default("")
   deliverables String[]
   body         String
-  status       ProposalStatus @default(DRAFT)
+  status       ProposalStatus    @default(DRAFT)
   font         String?
   fontSize     String?
   lastSavedAt  DateTime?
   sentAt       DateTime?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @default(now()) @updatedAt
+  acceptedAt   DateTime?
+  project      Project?
+  comments     ProposalComment[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @default(now()) @updatedAt
 
   @@index([userId])
   @@index([clientId])
   @@map("proposal")
+}
+
+model ProposalComment {
+  id         String   @id @default(cuid())
+  proposalId String
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  side       String
+  author     String
+  anchor     String
+  text       String
+  resolved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([proposalId])
+  @@map("proposal_comment")
+}
+
+model Project {
+  id               String           @id @default(cuid())
+  userId           String
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId         String
+  client           Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  proposalId       String           @unique
+  proposal         Proposal         @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  status           ProjectStatus    @default(NOT_STARTED)
+  progress         Int              @default(0)
+  depositPaid      Boolean          @default(false)
+  finalPaid        Boolean          @default(false)
+  completed        Boolean          @default(false)
+  contractName     String?
+  contractSignedAt DateTime?
+  messages         ProjectMessage[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @default(now()) @updatedAt
+
+  @@index([userId])
+  @@index([clientId])
+  @@map("project")
+}
+
+model ProjectMessage {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  side      String
+  author    String
+  text      String
+  file      String?
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@map("project_message")
 }
 
 model Session {

@@ -17,7 +17,9 @@ import useStatusMessage from "~/hook/useStatusMessage";
 import {
     DEFAULT_PROPOSAL_FONT,
     DEFAULT_PROPOSAL_FONT_SIZE,
+    PROPOSAL_BODY_GUIDE,
     type ProposalEditorForm,
+    proposalSendIssue,
     proposalUpdateZodSchema,
 } from "~/schema/proposal";
 import { api } from "~/trpc/react";
@@ -42,6 +44,7 @@ export default function ProposalEditorPage() {
 
     const bodyRef = useRef<HTMLDivElement>(null);
     const loadedId = useRef<string | null>(null);
+    const [bodyEmpty, setBodyEmpty] = useState(true);
 
     useEffect(() => {
         if (!proposal || loadedId.current === proposal.id) return;
@@ -56,12 +59,16 @@ export default function ProposalEditorPage() {
         });
 
         if (bodyRef.current) bodyRef.current.innerHTML = proposal.body;
-        
+        setBodyEmpty((bodyRef.current?.textContent ?? "").trim().length === 0);
+
         loadedId.current = proposal.id;
     }, [proposal]);
 
+    const savingForSend = useRef(false);
+
     const updateProposal = api.proposals.update.useMutation({
         onSuccess: () => {
+            if (savingForSend.current) return;
             showMessage("Proposal saved", true);
         },
 
@@ -115,8 +122,47 @@ export default function ProposalEditorPage() {
         updateProposal.mutate(result.data);
     };
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (isBusy) return;
+
+        const body = bodyRef.current?.innerHTML ?? proposal?.body ?? "";
+
+        const issue = proposalSendIssue({
+            title: form.title,
+            price: form.price,
+            due: form.due,
+            deliverables: form.deliverables,
+            body,
+        });
+
+        if (issue) {
+            showMessage(issue, false);
+            return;
+        }
+
+        // Persist the current edits first — the server validates the stored row,
+        // so sending without saving would flag fields the freelancer just fixed.
+        const result = proposalUpdateZodSchema.safeParse({ id, ...form, body });
+
+        if (!result.success) {
+            showMessage(
+                result.error.issues[0]?.message ??
+                    "Please check the terms and try again.",
+                false,
+            );
+            return;
+        }
+
+        savingForSend.current = true;
+
+        try {
+            await updateProposal.mutateAsync(result.data);
+        } catch {
+            return;
+        } finally {
+            savingForSend.current = false;
+        }
+
         sendProposal.mutate({ id });
     };
 
@@ -152,7 +198,7 @@ export default function ProposalEditorPage() {
                             </h6>
                         </div>
                         <div className="[&>label]:text-text/70 [&>label]:mb-[5px] [&>label]:block [&>label]:text-xs [&>label]:leading-[1.55]">
-                            <label>Project title</label>
+                            <label>Proposal title</label>
                             <input
                                 className="border-divider font-inherit text-text caret-accent hover:border-text/45 focus-visible:border-accent min-h-9 w-full rounded-md border bg-transparent px-2.5 py-1.5 text-sm focus-visible:outline-offset-0 max-lg:min-h-11 max-lg:text-[15px]"
                                 value={form.title}
@@ -252,12 +298,27 @@ export default function ProposalEditorPage() {
                             fontLocked={plan?.plan !== "PRO"}
                             exec={exec}
                         />
+                        <div className="relative">
+                            {bodyEmpty && !isProposalAccepted ? (
+                                <div className="text-text/30 pointer-events-none absolute inset-0 flex flex-col gap-2 px-[30px] pt-[26px] text-[15px] leading-[1.72] max-sm:px-4 max-sm:pt-[18px]">
+                                    {PROPOSAL_BODY_GUIDE.map((line) => (
+                                        <div key={line}>{line}</div>
+                                    ))}
+                                </div>
+                            ) : null}
                         <div
                             ref={bodyRef}
                             contentEditable={!isProposalAccepted}
+                            onInput={(e) =>
+                                setBodyEmpty(
+                                    (e.currentTarget.textContent ?? "").trim()
+                                        .length === 0,
+                                )
+                            }
                             suppressContentEditableWarning
-                            className={`[&_h1]:font-heading [&_h2]:font-heading [&_h3]:font-heading [&_a]:text-accent [&_a]:underline [&_h1]:mt-6 [&_h1]:mb-2.5 [&_h1]:text-[27px] [&_h1]:leading-[1.12] [&_h1]:font-semibold [&_h1]:tracking-[-0.02em] min-h-[420px] px-[30px] pt-[26px] pb-10 leading-[1.72] outline-none max-sm:px-4 max-sm:pt-[18px] max-sm:pb-8 [&_h2]:mt-[22px] [&_h2]:mb-2 [&_h2]:text-[22px] [&_h2]:leading-[1.12] [&_h2]:font-semibold [&_h2]:tracking-[-0.015em] [&_h3]:mt-[18px] [&_h3]:mb-1.5 [&_h3]:text-lg [&_h3]:leading-[1.12] [&_h3]:font-semibold [&_h3]:tracking-[-0.015em] [&_b]:font-bold [&_strong]:font-bold [&_ul]:list-disc [&_ol]:list-decimal [&_li]:list-outside [&_li]:pl-1 [&_li]:marker:text-text/70 [&_li]:mb-1 [&_ol]:mb-3 [&_ol]:pl-[22px] [&_ol]:leading-[1.7] [&_p]:mb-3 [&_p]:leading-[1.72] [&_ul]:mb-3 [&_ul]:pl-[22px] [&_ul]:leading-[1.7] ${form.font === "Lora" ? "font-body" : form.font === "Cormorant Garamond" ? "font-heading" : "font-sans"} ${form.fontSize === "14" ? "text-sm" : form.fontSize === "15" ? "text-[15px]" : form.fontSize === "16" ? "text-base" : "text-lg"}`}
+                            className={`relative [&_h1]:font-heading [&_h2]:font-heading [&_h3]:font-heading [&_a]:text-accent [&_a]:underline [&_h1]:mt-6 [&_h1]:mb-2.5 [&_h1]:text-[27px] [&_h1]:leading-[1.12] [&_h1]:font-semibold [&_h1]:tracking-[-0.02em] min-h-[420px] px-[30px] pt-[26px] pb-10 leading-[1.72] outline-none max-sm:px-4 max-sm:pt-[18px] max-sm:pb-8 [&_h2]:mt-[22px] [&_h2]:mb-2 [&_h2]:text-[22px] [&_h2]:leading-[1.12] [&_h2]:font-semibold [&_h2]:tracking-[-0.015em] [&_h3]:mt-[18px] [&_h3]:mb-1.5 [&_h3]:text-lg [&_h3]:leading-[1.12] [&_h3]:font-semibold [&_h3]:tracking-[-0.015em] [&_b]:font-bold [&_strong]:font-bold [&_ul]:list-disc [&_ol]:list-decimal [&_li]:list-outside [&_li]:pl-1 [&_li]:marker:text-text/70 [&_li]:mb-1 [&_ol]:mb-3 [&_ol]:pl-[22px] [&_ol]:leading-[1.7] [&_p]:mb-3 [&_p]:leading-[1.72] [&_ul]:mb-3 [&_ul]:pl-[22px] [&_ul]:leading-[1.7] ${form.font === "Lora" ? "font-body" : form.font === "Cormorant Garamond" ? "font-heading" : "font-sans"} ${form.fontSize === "14" ? "text-sm" : form.fontSize === "15" ? "text-[15px]" : form.fontSize === "16" ? "text-base" : "text-lg"}`}
                         />
+                        </div>
                     </div>
 
                     {isProposalAccepted ? (
@@ -324,6 +385,14 @@ export default function ProposalEditorPage() {
                                 )}
                             </button>
                         </div>
+                        {isProposalAccepted && proposal.project ? (
+                            <Link
+                                href={`/projects/${proposal.project.id}`}
+                                className="text-accent text-[12.5px] no-underline hover:underline"
+                            >
+                                View project →
+                            </Link>
+                        ) : null}
                         <div className="mt-[3px]">
                             <div className="text-text/38 mb-[8px] text-[10px] font-medium tracking-[0.12em] uppercase">
                                 Summary

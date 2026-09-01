@@ -7,7 +7,7 @@ This is a portfolio project. Payments are tracked manually; EZLane does not proc
 ## Product principles
 
 - Work should reflect how freelance projects actually run: flexible, conversational, and easy to adjust.
-- Clients and projects are separate records, but a portal always belongs to one project.
+- Clients and projects are separate records, but a portal always belongs to one client and shows all of their proposals and projects.
 - The proposal's structured terms are the source of truth for acceptance, the contract, and project setup.
 - Keep a permanent project record: proposal versions, messages, attachments, contract, and payment state.
 - Prefer simple, deliberate interactions over real-time collaboration or unnecessary account flows.
@@ -16,7 +16,7 @@ This is a portfolio project. Payments are tracked manually; EZLane does not proc
 
 1. The freelancer creates a client with a name and email, plus optional company and notes.
 2. They create and manually save a proposal with price, due date, deliverables, and a rich-text body.
-3. They send the proposal through that project's portal. Clients can leave inline comments and accept it.
+3. They send the proposal through the client's portal. Clients can leave inline comments and accept it.
 4. Acceptance locks the proposal and creates an active project using the proposal's structured terms.
 5. EZLane generates a fixed-template contract. The client accepts by typing their name.
 6. The project keeps one chronological message thread, optional attachments, manual status/progress, approval, and 50/50 manual payment tracking.
@@ -25,7 +25,7 @@ This is a portfolio project. Payments are tracked manually; EZLane does not proc
 
 ### Clients and portals
 
-Freelancers can keep multiple concurrent projects under one client record. Each project has its own independent portal URL and password: clients do not need an EZLane account and cannot see unrelated projects. Freelancers can use **Preview Portal** to inspect the same read-only portal view.
+Freelancers can keep multiple concurrent projects under one client record. Each client has one portal, created any time after the client exists — no proposal or acceptance needed first. The portal has a token-based URL (`/portal/{token1}/{token2}`) and a password; Pro freelancers can also give it a custom slug (`/portal/c/{slug}`). It is password-gated, needs no client account, and lists every non-draft proposal and every project for that client (active and completed) in one place. Clients cannot see other clients' work. The freelancer manages the link and password from the client's page.
 
 ### Proposals
 
@@ -58,6 +58,7 @@ Proposal events (sent, commented on, accepted), contract events, and each messag
 | Proposal formatting | Default font and size | Font family and size customization |
 | Client portal branding | Powered by EZLane | Branding removable |
 | Portal customization | — | Accent color and logo |
+| Custom portal URL | — | Custom slug (ezlane.app/portal/c/you) |
 
 Plan enforcement is currently conceptual/UI-level; payment processing is not implemented.
 

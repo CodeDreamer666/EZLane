@@ -18,14 +18,7 @@ export interface EzlaneState {
     paletteQuery: string;
     toast: string;
     openTabs: string[];
-    unlocked: Record<string, true | "preview">;
-    gatePw: string;
-    gateError: string;
     composer: Record<string, ComposerDraft>;
     dragOver: string;
-    signName: string;
-    acceptOpen: boolean;
-    pendingAnchor: string;
-    commentDraft: string;
     navOpen: boolean;
 }

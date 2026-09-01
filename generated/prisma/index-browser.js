@@ -150,6 +150,16 @@ exports.Prisma.ClientScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ClientPortalScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  urlToken1: 'urlToken1',
+  urlToken2: 'urlToken2',
+  passwordHash: 'passwordHash',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ProposalScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -164,8 +174,46 @@ exports.Prisma.ProposalScalarFieldEnum = {
   fontSize: 'fontSize',
   lastSavedAt: 'lastSavedAt',
   sentAt: 'sentAt',
+  acceptedAt: 'acceptedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProposalCommentScalarFieldEnum = {
+  id: 'id',
+  proposalId: 'proposalId',
+  side: 'side',
+  author: 'author',
+  anchor: 'anchor',
+  text: 'text',
+  resolved: 'resolved',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ProjectScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  clientId: 'clientId',
+  proposalId: 'proposalId',
+  status: 'status',
+  progress: 'progress',
+  depositPaid: 'depositPaid',
+  finalPaid: 'finalPaid',
+  completed: 'completed',
+  contractName: 'contractName',
+  contractSignedAt: 'contractSignedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProjectMessageScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  side: 'side',
+  author: 'author',
+  text: 'text',
+  file: 'file',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SessionScalarFieldEnum = {
@@ -232,10 +280,22 @@ exports.ProposalStatus = exports.$Enums.ProposalStatus = {
   ACCEPTED: 'ACCEPTED'
 };
 
+exports.ProjectStatus = exports.$Enums.ProjectStatus = {
+  NOT_STARTED: 'NOT_STARTED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  DELIVERED: 'DELIVERED',
+  AWAITING_REVIEW: 'AWAITING_REVIEW',
+  APPROVED: 'APPROVED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Client: 'Client',
+  ClientPortal: 'ClientPortal',
   Proposal: 'Proposal',
+  ProposalComment: 'ProposalComment',
+  Project: 'Project',
+  ProjectMessage: 'ProjectMessage',
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification'

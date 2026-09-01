@@ -76,9 +76,29 @@ export default function DashboardPage() {
           />
           {active.length > 0 ? (
             <div className="flex flex-col gap-[12px]">
-              {active.map((p, i) => (
-                <ProjectCard key={p.id} project={p} blocked={i >= lim} />
-              ))}
+              {active.map((p, i) => {
+                const c = state.clients.find((x) => x.id === p.clientId);
+                return (
+                  <ProjectCard
+                    key={p.id}
+                    href={`/projects/${p.id}`}
+                    clientLabel={c ? c.company || c.name : ""}
+                    title={p.title}
+                    statusLabel={p.completed ? "Completed" : p.status}
+                    progress={p.progress}
+                    price={p.price}
+                    due={p.due}
+                    payLabel={
+                      p.deposit && p.final
+                        ? "Paid in full"
+                        : p.deposit
+                          ? "Deposit in"
+                          : "Unpaid"
+                    }
+                    blocked={i >= lim}
+                  />
+                );
+              })}
             </div>
           ) : (
             <div className="border-divider rounded-[5px] border border-dashed p-[34px] text-center">

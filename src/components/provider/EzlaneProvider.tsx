@@ -48,15 +48,8 @@ function initialState(): EzlaneState {
         paletteQuery: "",
         toast: "",
         openTabs: ["pr5"],
-        unlocked: {},
-        gatePw: "",
-        gateError: "",
         composer: {},
         dragOver: "",
-        signName: "",
-        acceptOpen: false,
-        pendingAnchor: "",
-        commentDraft: "",
         navOpen: false,
     };
 }
@@ -98,13 +91,6 @@ export interface EzlaneApi {
         text: string,
     ) => void;
     toggleProposalComment: (proposalId: string, commentId: string) => void;
-    addClientComment: (
-        projectId: string,
-        proposalId: string,
-        anchor: string,
-        text: string,
-    ) => void;
-
     // tabs (proposal editor)
     openTab: (id: string) => void;
     closeTab: (id: string) => void;
@@ -124,21 +110,6 @@ export interface EzlaneApi {
     sendMessage: (projectId: string, side: "freelancer" | "client") => void;
     setDragOver: (projectId: string) => void;
     clearDragOver: () => void;
-
-    // portal
-    setGatePw: (v: string) => void;
-    tryUnlock: (project: Project) => void;
-    openGatePreview: (projectId: string) => void;
-    previewPortal: (projectId: string) => void;
-    openAccept: () => void;
-    closeAccept: () => void;
-    setSignName: (v: string) => void;
-    setPendingAnchor: (v: string) => void;
-    setCommentDraft: (v: string) => void;
-    cancelComment: () => void;
-    acceptProposal: (project: Project, proposal: Proposal) => void;
-    signContract: (project: Project) => void;
-    approveWork: (project: Project) => void;
 
     // settings / plan
     setSetting: (key: keyof Settings, value: Settings[keyof Settings]) => void;
@@ -364,51 +335,6 @@ export default function EzlaneProvider({ children }: { children: ReactNode }) {
             ),
         }));
 
-    /** Client-side comment from the portal — flips the proposal to "Client
-     * Commented" (unless already accepted) and notifies the freelancer. */
-    const addClientComment = (
-        projectId: string,
-        proposalId: string,
-        anchor: string,
-        text: string,
-    ) => {
-        const p = state.projects.find((x) => x.id === projectId);
-        const pr = state.proposals.find((x) => x.id === proposalId);
-        if (!p || !pr) return;
-        const c = client(p.clientId);
-        setState((s) => ({
-            ...s,
-            proposals: s.proposals.map((x) =>
-                x.id === proposalId
-                    ? {
-                        ...x,
-                        status: x.status === "Accepted" ? x.status : "Client Commented",
-                        comments: x.comments.concat([
-                            {
-                                id: uid("cm"),
-                                author: c.name,
-                                side: "client",
-                                anchor,
-                                text: text.trim(),
-                                ts: Date.now(),
-                                resolved: false,
-                            },
-                        ]),
-                    }
-                    : x,
-            ),
-            pendingAnchor: "",
-            commentDraft: "",
-        }));
-        notify({
-            projectId,
-            audience: "freelancer",
-            title: `${c.name} left a comment on “${pr.title}”`,
-            route: `/proposals/${proposalId}`,
-        });
-        say(`Comment added — it reaches ${state.settings.name} on their next load`);
-    };
-
     // ── tabs ────────────────────────────────────────────────────────────
     const openTab = (id: string) =>
         setState((s) => ({
@@ -594,130 +520,6 @@ export default function EzlaneProvider({ children }: { children: ReactNode }) {
         say("Message posted — the other side sees it on their next load");
     };
 
-    // ── portal ──────────────────────────────────────────────────────────
-    const setGatePw = (v: string) =>
-        setState((s) => ({ ...s, gatePw: v, gateError: "" }));
-
-    const tryUnlock = (p: Project) => {
-        if (state.gatePw.trim() === p.password) {
-            setState((s) => ({
-                ...s,
-                unlocked: { ...s.unlocked, [p.id]: true },
-                gatePw: "",
-                gateError: "",
-            }));
-            const pr = state.proposals.find((x) => x.id === p.proposalId);
-            go(
-                `/portal/${p.id}/${pr && pr.status !== "Accepted" ? "proposal" : "overview"}`,
-            );
-        } else {
-            setState((s) => ({ ...s, gateError: "bad" }));
-        }
-    };
-
-    const openGatePreview = (projectId: string) => {
-        setState((s) => {
-            const unlocked = { ...s.unlocked };
-            delete unlocked[projectId];
-            return { ...s, unlocked };
-        });
-    };
-
-    const previewPortal = (projectId: string) => {
-        setState((s) => ({
-            ...s,
-            unlocked: { ...s.unlocked, [projectId]: "preview" },
-        }));
-        go(`/portal/${projectId}/overview`);
-    };
-
-    const openAccept = () => setState((s) => ({ ...s, acceptOpen: true }));
-    const closeAccept = () => setState((s) => ({ ...s, acceptOpen: false }));
-    const setSignName = (v: string) => setState((s) => ({ ...s, signName: v }));
-    const setPendingAnchor = (v: string) =>
-        setState((s) => ({ ...s, pendingAnchor: v }));
-    const setCommentDraft = (v: string) =>
-        setState((s) => ({ ...s, commentDraft: v }));
-    const cancelComment = () =>
-        setState((s) => ({ ...s, pendingAnchor: "", commentDraft: "" }));
-
-    const acceptProposal = (p: Project, pr: Proposal) => {
-        const c = client(p.clientId);
-        patchProposal(pr.id, { status: "Accepted" });
-        patchProject(p.id, {
-            stage: "active",
-            title: pr.title,
-            price: pr.price,
-            due: pr.due,
-            deliverables: pr.deliverables.slice(),
-            status: "Not started",
-        });
-        notify({
-            projectId: p.id,
-            audience: "freelancer",
-            title: `${c.name} accepted “${pr.title}” — $${pr.price.toLocaleString("en-US")}. The project is live.`,
-            route: `/projects/${p.id}`,
-        });
-        notify({
-            projectId: p.id,
-            audience: "client",
-            title: "You accepted the proposal — the agreement is ready to sign",
-            route: "/contract",
-        });
-        setState((s) => ({ ...s, acceptOpen: false }));
-        go(`/portal/${p.id}/contract`);
-        say("Accepted — the agreement is generated from these terms");
-    };
-
-    const signContract = (p: Project) => {
-        const name = state.signName.trim();
-        if (name.length < 3) {
-            say("Type your full name to sign");
-            return;
-        }
-        patchProject(p.id, {
-            contract: { name, ts: Date.now() },
-            status: "In Progress",
-        });
-        post(p.id, {
-            from: "system",
-            side: "system",
-            text: `Agreement signed by ${name}`,
-        });
-        const half = Math.round(p.price / 2);
-        notify({
-            projectId: p.id,
-            audience: "freelancer",
-            title: `${name} signed the agreement on “${p.title}” — deposit of $${half.toLocaleString("en-US")} is due`,
-            route: `/projects/${p.id}`,
-        });
-        notify({
-            projectId: p.id,
-            audience: "client",
-            title: "Agreement signed — deposit invoice issued",
-            route: "/contract",
-        });
-        setState((s) => ({ ...s, signName: "" }));
-        say("Signed — work can start");
-    };
-
-    const approveWork = (p: Project) => {
-        const c = client(p.clientId);
-        patchProject(p.id, { status: "Approved", progress: 100 });
-        post(p.id, {
-            from: "system",
-            side: "system",
-            text: `${c.name} approved the work`,
-        });
-        notify({
-            projectId: p.id,
-            audience: "freelancer",
-            title: `${c.name} approved the work on “${p.title}” — final payment is due`,
-            route: `/projects/${p.id}`,
-        });
-        say(`Approved — ${state.settings.name} has been notified`);
-    };
-
     // ── settings / plan ─────────────────────────────────────────────────
     const setSetting = (key: keyof Settings, value: Settings[keyof Settings]) =>
         setState((s) => ({ ...s, settings: { ...s.settings, [key]: value } }));
@@ -778,7 +580,6 @@ export default function EzlaneProvider({ children }: { children: ReactNode }) {
         removeDeliverable,
         addProposalComment,
         toggleProposalComment,
-        addClientComment,
         openTab,
         closeTab,
         notify,
@@ -790,19 +591,6 @@ export default function EzlaneProvider({ children }: { children: ReactNode }) {
         sendMessage,
         setDragOver,
         clearDragOver,
-        setGatePw,
-        tryUnlock,
-        openGatePreview,
-        previewPortal,
-        openAccept,
-        closeAccept,
-        setSignName,
-        setPendingAnchor,
-        setCommentDraft,
-        cancelComment,
-        acceptProposal,
-        signContract,
-        approveWork,
         setSetting,
         setBilling,
         setPlan,
