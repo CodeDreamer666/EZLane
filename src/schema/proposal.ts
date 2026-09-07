@@ -10,13 +10,8 @@ export const PROPOSAL_FONT_SIZES = ["14", "15", "16", "18"] as const;
 export const DEFAULT_PROPOSAL_FONT = "Lora";
 export const DEFAULT_PROPOSAL_FONT_SIZE = "15";
 
-/** The placeholder title a proposal is created with. It can't be sent as-is. */
 export const DEFAULT_PROPOSAL_TITLE = "Untitled proposal";
 
-/**
- * Prompts shown as ghost text in an empty editor to help the freelancer start
- * writing. This is guidance only — it is never saved as the proposal body.
- */
 export const PROPOSAL_BODY_GUIDE: readonly string[] = [
     "Overview — what the project is and why it matters.",
     "Approach — how you will work, in the order you will work.",
@@ -30,11 +25,6 @@ const stripHtml = (html: string): string =>
         .replace(/\s+/g, " ")
         .trim();
 
-/**
- * Returns a human-readable reason the proposal can't be sent yet, or `null`
- * when it is ready. Used by both the editor (before calling `send`) and the
- * `send` procedure (against the persisted row).
- */
 export function proposalSendIssue(p: {
     title: string;
     price: number;

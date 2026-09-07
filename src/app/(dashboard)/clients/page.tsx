@@ -53,36 +53,15 @@ export default function ClientsPage() {
             await utils.invalidate();
         },
     });
+    //     e: MouseEvent<HTMLButtonElement>,
+    //     clientId: string,
+    // ) => {
+    //     e.stopPropagation();
 
-    const handleNewProposal = (
-        e: MouseEvent<HTMLButtonElement>,
-        clientId: string,
-    ) => {
-        e.stopPropagation();
+    //     if (createProposal.isPending) return;
 
-        if (createProposal.isPending) return;
-
-        createProposal.mutate({ clientId });
-    };
-
-    const toggleSelected = (clientId: string) => {
-        setSelectedIds(
-            selectedIds.includes(clientId)
-                ? selectedIds.filter((id) => id !== clientId)
-                : [...selectedIds, clientId],
-        );
-    };
-
-    const cancelManage = () => {
-        setManaging(false);
-        setSelectedIds([]);
-    };
-
-    const handleDelete = () => {
-        if (selectedIds.length === 0) return;
-
-        deleteClients.mutate({ ids: selectedIds });
-    };
+    //     createProposal.mutate({ clientId });
+    // };
 
     const pendingClientId = createProposal.isPending
         ? createProposal.variables?.clientId
@@ -121,7 +100,10 @@ export default function ClientsPage() {
                         </span>
                         <Button
                             variant="secondary"
-                            onClick={cancelManage}
+                            onClick={() => {
+                                setManaging(false);
+                                setSelectedIds([]);
+                            }}
                             disabled={deleteClients.isPending}
                         >
                             Cancel
@@ -147,14 +129,18 @@ export default function ClientsPage() {
 
             {/* Mobile: card list */}
             <div className="flex flex-col gap-3 md:hidden">
-                {clients.map((c) => (
+                {clients.map((client) => (
                     <div
-                        key={c.id}
+                        key={client.id}
                         className="border-divider bg-surface cursor-pointer rounded-[7px] border p-4"
                         onClick={() =>
                             managing
-                                ? toggleSelected(c.id)
-                                : router.push(`/clients/${c.id}`)
+                                ? setSelectedIds(
+                                    selectedIds.includes(client.id)
+                                        ? selectedIds.filter((id) => id !== client.id)
+                                        : [...selectedIds, client.id],
+                                )
+                                : router.push(`/clients/${client.id}`)
                         }
                     >
                         <div className="flex items-start gap-3">
@@ -162,14 +148,14 @@ export default function ClientsPage() {
                                 <input
                                     type="checkbox"
                                     className="mt-1.5 size-4 flex-none"
-                                    checked={selectedIds.includes(c.id)}
+                                    checked={selectedIds.includes(client.id)}
                                     readOnly
                                 />
                             ) : null}
 
                             <div className="min-w-0 flex-1">
                                 <div className="font-heading text-[19px] font-semibold break-words">
-                                    {c.name}
+                                    {client.name}
                                 </div>
 
                                 <dl className="mt-3 flex flex-col">
@@ -178,7 +164,7 @@ export default function ClientsPage() {
                                             Email
                                         </dt>
                                         <dd className="text-text/75 mt-1 text-[13.5px] break-all">
-                                            {c.email}
+                                            {client.email}
                                         </dd>
                                     </div>
                                     <div className="border-divider border-t py-2.5">
@@ -186,7 +172,7 @@ export default function ClientsPage() {
                                             Company
                                         </dt>
                                         <dd className="mt-1 text-[13.5px] break-words">
-                                            {c.company ?? "—"}
+                                            {client.company ?? "—"}
                                         </dd>
                                     </div>
                                 </dl>
@@ -195,9 +181,15 @@ export default function ClientsPage() {
                                     <button
                                         className="font-inherit border-divider text-accent mt-3 w-full cursor-pointer rounded-[5px] border bg-transparent px-3 py-2.5 text-[13px] disabled:cursor-not-allowed disabled:opacity-45"
                                         disabled={createProposal.isPending}
-                                        onClick={(e) => handleNewProposal(e, c.id)}
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+
+                                            if (createProposal.isPending) return;
+
+                                            createProposal.mutate({ clientId: client.id });
+                                        }}
                                     >
-                                        {pendingClientId === c.id ? (
+                                        {pendingClientId === client.id ? (
                                             <span className="flex items-center justify-center gap-2">
                                                 <LoadingIcon />
                                                 Creating...
@@ -223,14 +215,18 @@ export default function ClientsPage() {
                     </tr>
                 </thead>
                 <tbody>
-                    {clients.map((c) => (
+                    {clients.map((client) => (
                         <tr
-                            key={c.id}
+                            key={client.id}
                             className="hover:bg-text/5 cursor-pointer"
                             onClick={() =>
                                 managing
-                                    ? toggleSelected(c.id)
-                                    : router.push(`/clients/${c.id}`)
+                                    ? setSelectedIds(
+                                        selectedIds.includes(client.id)
+                                            ? selectedIds.filter((id) => id !== client.id)
+                                            : [...selectedIds, client.id],
+                                    )
+                                    : router.push(`/clients/${client.id}`)
                             }
                         >
                             {managing ? (
@@ -238,22 +234,28 @@ export default function ClientsPage() {
                                     <input
                                         type="checkbox"
                                         className="size-4"
-                                        checked={selectedIds.includes(c.id)}
+                                        checked={selectedIds.includes(client.id)}
                                         readOnly
                                     />
                                 </td>
                             ) : null}
                             <td className="font-heading text-[15px] font-semibold">
-                                {c.name}
+                                {client.name}
                             </td>
-                            <td className="text-text/62 text-[13px]">{c.email}</td>
-                            <td className="text-[13px]">{c.company ?? "—"}</td>
+                            <td className="text-text/62 text-[13px]">{client.email}</td>
+                            <td className="text-[13px]">{client.company ?? "—"}</td>
                             <td className="w-[120px] text-right">
                                 {managing ? null : (
                                     <button
                                         className="font-inherit text-accent cursor-pointer border-0 bg-transparent p-0 text-[12.5px] no-underline hover:underline disabled:cursor-not-allowed disabled:opacity-45"
                                         disabled={createProposal.isPending}
-                                        onClick={(e) => handleNewProposal(e, c.id)}
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+
+                                            if (createProposal.isPending) return;
+
+                                            createProposal.mutate({ clientId: client.id });
+                                        }}
                                     >
                                         New proposal
                                     </button>
@@ -281,7 +283,11 @@ export default function ClientsPage() {
                         </Button>
                         <Button
                             variant="primary"
-                            onClick={handleDelete}
+                            onClick={() => {
+                                if (selectedIds.length === 0) return;
+
+                                deleteClients.mutate({ ids: selectedIds });
+                            }}
                             disabled={deleteClients.isPending}
                         >
                             {deleteClients.isPending ? (

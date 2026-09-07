@@ -11,12 +11,12 @@
 
 ## `src/app/(dashboard)/`
 
-- [ ] `src/app/(dashboard)/DashboardShell.tsx`
-- [ ] `src/app/(dashboard)/layout.tsx`
+- [x] `src/app/(dashboard)/DashboardShell.tsx`
+- [x] `src/app/(dashboard)/layout.tsx`
 
 ## `src/app/(dashboard)/clients/`
 
-- [ ] `src/app/(dashboard)/clients/page.tsx`
+- [x] `src/app/(dashboard)/clients/page.tsx`
 
 ## `src/app/(dashboard)/clients/[id]/`
 
@@ -166,14 +166,7 @@
 
 ## `src/components/shell/`
 
-- [ ] `src/components/shell/AddClientDialog.tsx`
-- [ ] `src/components/shell/Avatar.tsx`
-- [ ] `src/components/shell/CommandPalette.tsx`
-- [ ] `src/components/shell/Header.tsx`
 - [ ] `src/components/shell/MessageCenter.tsx`
-- [ ] `src/components/shell/Sidebar.tsx`
-- [ ] `src/components/shell/initials.ts`
-- [ ] `src/components/shell/usePageTitle.ts`
 
 ## `src/context/`
 
@@ -199,17 +192,17 @@
 
 ## `src/schema/`
 
-- [ ] `src/schema/client.ts`
+- [x] `src/schema/client.ts`
 - [ ] `src/schema/proposal.ts`
 
 ## `src/server/`
 
-- [ ] `src/server/db.ts`
+- [x] `src/server/db.ts`
 
 ## `src/server/api/`
 
-- [ ] `src/server/api/root.ts`
-- [ ] `src/server/api/trpc.ts`
+- [x] `src/server/api/root.ts`
+- [x] `src/server/api/trpc.ts`
 
 ## `src/server/api/routers/`
 
@@ -224,20 +217,20 @@
 
 ## `src/server/better-auth/`
 
-- [ ] `src/server/better-auth/client.ts`
-- [ ] `src/server/better-auth/config.ts`
-- [ ] `src/server/better-auth/index.ts`
-- [ ] `src/server/better-auth/server.ts`
+- [x] `src/server/better-auth/client.ts`
+- [x] `src/server/better-auth/config.ts`
+- [x] `src/server/better-auth/index.ts`
+- [x] `src/server/better-auth/server.ts`
 
 ## `src/styles/`
 
-- [ ] `src/styles/globals.css`
+- [x] `src/styles/globals.css`
 
 ## `src/trpc/`
 
-- [ ] `src/trpc/query-client.ts`
-- [ ] `src/trpc/react.tsx`
-- [ ] `src/trpc/server.ts`
+- [x] `src/trpc/query-client.ts`
+- [x] `src/trpc/react.tsx`
+- [x] `src/trpc/server.ts`
 
 ## `src/type/`
 
